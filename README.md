@@ -26,7 +26,7 @@ This project analyzes global environmental indicators to communicate trends and 
 
 - Dataset: Global Environmental Trends 2000-2024
 - Source: https://www.kaggle.com/datasets/adilshamim8/temperature
-- Current location: raw_dataset/update_temperature.csv
+- Current location: data/raw/v1/environmental_trends.csv
 
 Planned data layout for assessment requirements:
 
@@ -66,12 +66,50 @@ Each hypothesis will be validated using EDA and basic statistical checks (correl
 
 ## Dashboard Walkthrough
 
-BI tool decision: Tableau Public (chosen for strong storytelling features, easy sharing, and assessment-friendly public hosting).
+### Recommended BI Tool (Power BI vs Tableau)
 
-The dashboard will include at least four distinct chart types:
+**Recommendation: Tableau Public**
+
+Rationale for this project:
+
+- Free public hosting and easy sharing for assessment
+- Strong storytelling features for non-technical audiences
+- Clean support for tooltips, annotations, and narrative captions
+- Simple data refresh workflow from versioned CSVs
+
+Power BI is also strong, but the free tier requires a Microsoft account and has more friction for public sharing. Tableau Public aligns best with the assessment requirement for a publishable, shareable dashboard.
+
+### Tableau Public Setup (Step-by-Step)
+
+1. Create a Tableau Public account and install Tableau Public.
+2. Open Tableau Public and connect to the processed dataset:
+	- data/processed/v1/environmental_trends_clean.csv
+3. (Optional) Add model output for the forecast sheet:
+	- data/processed/v1/model_predictions.csv
+4. Create calculated fields as needed:
+	- Emissions per capita growth ($\Delta$ CO2 per capita by year)
+	- Rolling average temperature (3-year window)
+5. Build the required visuals (minimum 4 chart types):
+	- Line chart: temperature trend by year and country (BR1)
+	- Scatter plot: CO2 per capita vs average temperature, color by renewable energy percent (BR2, BR4)
+	- Bar chart: top 10 countries by extreme weather events (BR3)
+	- Heatmap: country by year for temperature or emissions intensity (BR1, BR2)
+6. Add narrative elements:
+	- Titles that explain the insight in plain language
+	- Tooltips with definitions and data caveats
+	- An annotations panel for ethics and governance notes
+7. Build a dashboard layout:
+	- Top row: KPI cards (global avg temp change, CO2 per capita trend, renewables share)
+	- Middle row: two main charts (line + scatter)
+	- Bottom row: bar + heatmap, plus a short text narrative
+8. Add filters and interactions:
+	- Country selector, year range, and metric selector
+9. Export/publish to Tableau Public and link in this README.
+
+### Dashboard Visuals (Minimum Four Plot Types)
 
 - Line chart: temperature trend by year and country (BR1)
-- Scatter plot: CO2 emissions vs average temperature, with population size and renewable energy coloring (BR2, BR4)
+- Scatter plot: CO2 emissions vs average temperature, with renewable energy coloring (BR2, BR4)
 - Bar chart: top 10 countries by extreme weather events (BR3)
 - Heatmap: country by year for temperature or emissions intensity (BR1, BR2)
 
@@ -94,6 +132,22 @@ A Data Ethics and Governance panel will be included in the dashboard to make thi
 - GDPR and governance: The project does not handle personal data but follows principles of minimization, transparency, accuracy, and accountability
 - Social impact: Climate dashboards can influence public perception and policy narratives; insights will be framed carefully with limitations
 
+## Communication of Insights (LO2.1 - LO2.3)
+
+To make insights accessible to both technical and non-technical audiences:
+
+- Provide plain-language headlines on each chart (e.g., "Warming trend accelerates after 2015")
+- Use tooltips with short definitions for metrics (CO2 per capita, renewables share)
+- Include a short narrative caption per chart describing the key takeaway
+- Offer a "Technical notes" toggle section with model performance (MAE, RMSE)
+- Ensure labels, legends, and units are visible and consistent
+
+Documentation approach:
+
+- Notebooks are organized by analysis stage in the [jupyter_notebooks](jupyter_notebooks) folder
+- Processed and prediction outputs are versioned under [data/processed](data/processed)
+- All charts and calculations will be documented in Tableau Public workbook notes
+
 ## Results
 
 This section will summarize the final EDA highlights, statistical checks for hypotheses, and model performance (MAE, RMSE). It will include both technical metrics and plain-language summaries.
@@ -107,6 +161,12 @@ This section will summarize the final EDA highlights, statistical checks for hyp
 - Run EDA and hypothesis checks
 - Build a simple forecasting model
 - Export predictions and build the BI dashboard
+
+### Updates
+
+- Add new-year data to data/raw/v2
+- Rerun notebooks and export data/processed/v2
+- Version the dashboard extract and record changes
 
 ### Maintenance and Updates
 
@@ -127,11 +187,32 @@ This section will summarize the final EDA highlights, statistical checks for hyp
 - Missing contextual variables (GDP, policy changes, energy mix)
 - Modelling limitations due to short time series per country
 
+## UX, Accessibility, and Dashboard Standards
+
+- Information hierarchy: titles, filters, and KPIs are placed to guide attention from summary to detail
+- Consistency: a single color palette for emissions, renewables, and temperature across all charts
+- Accessibility: colorblind-friendly palette, high-contrast labels, and avoid red-green only cues
+- User control: filters (country, year range) with reset buttons and clear tooltips
+
+## Assessment Alignment Checklist
+
+- LO1.1 Ethics, privacy, governance: documented in the ethics section and dashboard notes
+- LO1.2 Legal and social implications: licensing and GDPR principles documented
+- LO2.1 Insight communication: narrative captions and plain-language summaries in dashboard
+- LO2.2 Visualisation and narratives: minimum four plot types plus guided dashboard flow
+- LO2.3 Documentation: README sections and notebook structure align with analysis stages
+- LO3.1 Project plan: implementation, maintenance, updates, evaluation included
+- LO3.2 Reflection: challenges and limitations recorded
+
 ## How AI Was Used
 
 - Ideation and design thinking
 - Drafting business requirements and hypotheses
 - Structuring the README and dashboard narrative
+
+## Dashboard Link
+
+- Tableau Public: (to be added after publishing)
 
 ## Credits and References
 

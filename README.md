@@ -115,7 +115,7 @@ Power BI is also strong, but the free tier requires a Microsoft account and has 
 - Geographic map (heatmap): average temperature by country with color gradient (BR1, BR2)
 - Line chart (forecast): country-specific temperature predictions 2025-2029 with per-country linear regression models
 
-Dashboard features unified country filtering via parameter (pCountry), year range sliders, and interactive story with 5 narrative points.
+Dashboard features country and year range filters with interactive story containing 5 narrative points.
 
 ## Ethics, Privacy, and Governance (LO1.1)
 

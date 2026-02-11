@@ -1,72 +1,139 @@
-# ![CI logo](https://codeinstitute.s3.amazonaws.com/fullstack/ci_logo_small.png)
+# Global Environmental Trends (2000-2024)
 
-## Template Instructions
+Global Environmental Trends (2000-2024) is a data app/dashboard that helps non-technical users (public, students, local sustainability teams) and technical users (analysts, policy and ESG teams) understand climate risk signals, emissions, and the renewable transition. It combines exploratory analysis, hypothesis checks, and a simple forecasting model with a clear, accessible dashboard experience.
 
-Welcome,
+## Project Overview
 
-This is the Code Institute student template for the Data Analytics capstone project. We have preinstalled all of the tools you need to get started. It's perfectly okay to use this template as the basis for your project submissions. Click the `Use this template` button above to get started.
+This project analyzes global environmental indicators to communicate trends and risks, and to deliver data-driven insights for public awareness and policy discussion. It follows ethical and responsible data practices and emphasizes clarity for both technical and non-technical audiences.
 
-You can safely delete the Template Instructions section of this README.md file and modify the remaining paragraphs for your own project. Please do read the Template Instructions at least once, though! It contains some important information about the IDE and the extensions we use.
+## Business Case and Target Audience
 
-## How to use this repo
+### Target Audience
 
-1. Use this template to create your GitHub project repo. Click the **Use this template** button, then click **Create a new repository**.
+- Non-technical: community groups, sustainability advocates, students, general public
+- Technical: analysts, policy teams, ESG stakeholders, researchers
 
-1. Copy the URL of your repository to your clipboard.
+### Business Requirements (Dashboard Questions)
 
-1. In VS Code, select **File** -> **Open Folder**.
+- BR1 - Trend awareness: How have average temperatures changed from 2000 to 2024 across countries?
+- BR2 - Emissions relationship: Is higher CO2 emissions per capita associated with higher average temperature (by country and over time)?
+- BR3 - Climate risk indicators: How do extreme weather events change over time, and which countries have the highest counts?
+- BR4 - Mitigation signals: Is increasing renewable energy percent associated with lower emissions growth or stabilization?
+- BR5 - Environmental resilience: How does forest area percent relate to extreme events or rainfall patterns?
+- BR6 - Forecasting: What is the projected short-term trajectory (next 3 to 5 years) of temperature or extreme events using a simple, explainable model?
 
-1. Select your `vscode-projects` folder, then click the **Select Folder** button on Windows, or the **Open** button on Mac.
+## Dataset and Source
 
-1. From the top menu in VS Code, select **Terminal** > **New Terminal** to open the terminal.
+- Dataset: Global Environmental Trends 2000-2024
+- Source: https://www.kaggle.com/datasets/adilshamim8/temperature
+- Current location: raw_dataset/update_temperature.csv
 
-1. In the terminal, type `git clone` followed by the URL of your GitHub repository. Then hit **Enter**. This command will download all the files in your GitHub repository into your vscode-projects folder.
+Planned data layout for assessment requirements:
 
-1. In VS Code, select **File** > **Open Folder** again.
+- data/raw/v1/environmental_trends.csv
+- data/processed/v1/environmental_trends_clean.csv
+- data/processed/v1/model_predictions.csv
 
-1. This time, navigate to and select the folder for the project you just downloaded. Then, click **Select Folder**.
+## Project Hypotheses
 
-1. A virtual environment is necessary when working with Python projects to ensure each project's dependencies are kept separate from each other. You need to create your virtual environment, also called a venv, and then ensure that it is activated any time you return to your workspace.
-Click the gear icon in the lower left-hand corner of the screen to open the Manage menu and select **Command Palette** to open the VS Code command palette.
+- H1: Countries with higher CO2 emissions per capita tend to have higher average temperature (association, not causation).
+- H2: Higher renewable energy percent is associated with lower or stabilizing CO2 emissions per capita over time.
+- H3: Extreme weather events increase over time in many countries, with trends differing by country.
+- H4 (optional): Lower forest area percent is associated with higher extreme weather counts and or rainfall volatility.
 
-1. In the command palette, type: *create environment* and select **Python: Create Environment…**
+Each hypothesis will be validated using EDA and basic statistical checks (correlations and simple regressions), with clear caveats about causality.
 
-1. Choose **Venv** from the dropdown list.
+## Methodology
 
-1. Choose the Python version you installed earlier. Currently, we recommend Python 3.12.8
+1. Data ingestion and quality checks
+	- Load the raw CSV
+	- Check missing values, types, and duplicates
+	- Standardize country names if needed
+	- Save a cleaned version to a versioned folder
+2. EDA and descriptive statistics
+	- Summary stats by country and year
+	- Correlation analysis with limitations stated
+	- Trend analysis and diagnostic visuals
+3. Hypothesis testing and analytical validation
+	- Pearson and or Spearman correlations for H1 and H2
+	- Simple regressions as sanity checks
+	- Early vs late period comparisons (2000-2005 vs 2019-2024)
+4. Predictive modeling (simple and explainable)
+	- Forecast target: average temperature or extreme weather events
+	- Model: linear regression or ridge with time-aware split
+	- Report MAE and RMSE with limitations
+	- Export predictions for the dashboard
 
-1. **DO NOT** click the box next to `requirements.txt`, as you need to do more steps before you can install your dependencies. Click **OK**.
+## Dashboard Walkthrough
 
-1. You will see a `.venv` folder appear in the file explorer pane to show that the virtual environment has been created.
+BI tool decision: Tableau Public (chosen for strong storytelling features, easy sharing, and assessment-friendly public hosting).
 
-1. **Important**: Note that the `.venv` folder is in the `.gitignore` file so that Git won't track it.
+The dashboard will include at least four distinct chart types:
 
-1. Return to the terminal by clicking on the TERMINAL tab, or click on the **Terminal** menu and choose **New Terminal** if no terminal is currently open.
+- Line chart: temperature trend by year and country (BR1)
+- Scatter plot: CO2 emissions vs average temperature, with population size and renewable energy coloring (BR2, BR4)
+- Bar chart: top 10 countries by extreme weather events (BR3)
+- Heatmap: country by year for temperature or emissions intensity (BR1, BR2)
 
-1. In the terminal, use the command below to install your dependencies. This may take several minutes.
+Optional enhancements include KPI cards, dual-axis line charts (CO2 vs renewables), and box plots for distribution comparisons.
 
- ```console
- pip3 install -r requirements.txt
- ```
+## Ethics, Privacy, and Governance (LO1.1)
 
-1. Open the `jupyter_notebooks` directory, and click on the notebook you want to open.
+Even though this dataset is not personal data, responsible practice is still required:
 
-1. Click the **kernel** button and choose **Python Environments**.
+- Avoid causal claims; focus on association and clearly communicate uncertainty
+- Consider representativeness and coverage bias across countries
+- Discuss environmental justice issues (per-capita metrics can obscure total impact)
+- Communicate model limitations and uncertainty to avoid over-trust
 
-Note that the kernel says `Python 3.12.8` as it inherits from the venv, so it will be Python-3.12.8 if that is what is installed on your PC. To confirm this, you can use the command below in a notebook code cell.
+A Data Ethics and Governance panel will be included in the dashboard to make this explicit to users.
 
-```console
-! python --version
-```
+## Legal and Social Implications (LO1.2)
 
-## Deployment Reminders
+- Data licensing and attribution: Kaggle source will be cited and linked
+- GDPR and governance: The project does not handle personal data but follows principles of minimization, transparency, accuracy, and accountability
+- Social impact: Climate dashboards can influence public perception and policy narratives; insights will be framed carefully with limitations
 
-* Set the `.python-version` Python version to a [Heroku-22](https://devcenter.heroku.com/articles/python-support#supported-runtimes) stack currently supported version that closest matches what you used in this project.
-* The project can be deployed to Heroku using the following steps.
+## Results
 
-1. Log in to Heroku and create an App
-2. At the **Deploy** tab, select **GitHub** as the deployment method.
-3. Select your repository name and click **Search**. Once it is found, click **Connect**.
-4. Select the branch you want to deploy, then click **Deploy Branch**.
-5. The deployment process should happen smoothly if all deployment files are fully functional. Click the button **Open App** at the top of the page to access your App.
-6. If the slug size is too large, then add large files not required for the app to the `.slugignore` file.
+This section will summarize the final EDA highlights, statistical checks for hypotheses, and model performance (MAE, RMSE). It will include both technical metrics and plain-language summaries.
+
+## Project Plan (LO3.1)
+
+### Implementation
+
+- Ingest data and store raw versioned files
+- Clean and validate data, export processed datasets
+- Run EDA and hypothesis checks
+- Build a simple forecasting model
+- Export predictions and build the BI dashboard
+
+### Maintenance and Updates
+
+- Add new-year data to data/raw/v2
+- Rerun notebooks and export data/processed/v2
+- Refresh dashboard extracts
+
+### Evaluation
+
+- Usability checks with 2 to 3 users
+- Record feedback and iterate on labels, layout, and narrative
+- Monitor model drift and schedule periodic retraining
+
+## Challenges and Reflection (LO3.2)
+
+- Limited time coverage (2000-2024)
+- Possible gaps in country coverage and data completeness
+- Missing contextual variables (GDP, policy changes, energy mix)
+- Modelling limitations due to short time series per country
+
+## How AI Was Used
+
+- Ideation and design thinking
+- Drafting business requirements and hypotheses
+- Structuring the README and dashboard narrative
+
+## Credits and References
+
+- Code Institute Data Analytics capstone template
+- Kaggle dataset: Global Environmental Trends 2000-2024

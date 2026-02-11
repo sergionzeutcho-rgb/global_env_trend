@@ -90,10 +90,11 @@ Power BI is also strong, but the free tier requires a Microsoft account and has 
 	- Emissions per capita growth ($\Delta$ CO2 per capita by year)
 	- Rolling average temperature (3-year window)
 5. Build the required visuals (minimum 4 chart types):
-	- Line chart: temperature trend by year and country (BR1)
-	- Scatter plot: CO2 per capita vs average temperature, color by renewable energy percent (BR2, BR4)
+	- Line chart: temperature trend by year and country with 3-year rolling average (BR1)
+	- Geographic map: CO2 per capita by country, sized by population with renewable energy in tooltips (BR2, BR4)
 	- Bar chart: top 10 countries by extreme weather events (BR3)
-	- Heatmap: country by year for temperature or emissions intensity (BR1, BR2)
+	- Geographic map (heatmap): average temperature by country with color gradient (BR1, BR2)
+	- Line chart (forecast): country-specific temperature predictions 2025-2029
 6. Add narrative elements:
 	- Titles that explain the insight in plain language
 	- Tooltips with definitions and data caveats
@@ -106,14 +107,15 @@ Power BI is also strong, but the free tier requires a Microsoft account and has 
 	- Country selector, year range, and metric selector
 9. Export/publish to Tableau Public and link in this README.
 
-### Dashboard Visuals (Minimum Four Plot Types)
+### Dashboard Visuals (Five Chart Types Implemented)
 
-- Line chart: temperature trend by year and country (BR1)
-- Scatter plot: CO2 emissions vs average temperature, with renewable energy coloring (BR2, BR4)
-- Bar chart: top 10 countries by extreme weather events (BR3)
-- Heatmap: country by year for temperature or emissions intensity (BR1, BR2)
+- Line chart: temperature trend by year (top 8 countries) with 3-year rolling average (BR1)
+- Geographic map: CO2 emissions per capita by country, sized by population with temperature and renewable energy in tooltips (BR2, BR4)
+- Horizontal bar chart: top 10 countries by extreme weather events with year filter (BR3)
+- Geographic map (heatmap): average temperature by country with color gradient (BR1, BR2)
+- Line chart (forecast): country-specific temperature predictions 2025-2029 with per-country linear regression models
 
-Optional enhancements include KPI cards, dual-axis line charts (CO2 vs renewables), and box plots for distribution comparisons.
+Dashboard features unified country filtering via parameter (pCountry), year range sliders, and interactive story with 5 narrative points.
 
 ## Ethics, Privacy, and Governance (LO1.1)
 

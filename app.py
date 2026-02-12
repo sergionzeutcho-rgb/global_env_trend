@@ -542,37 +542,61 @@ elif st.session_state.current_page == "Data Overview":
 elif st.session_state.current_page == "Overview":
     st.subheader("Key signals")
     st.write(
-        "Outcome: quick view of how temperature, emissions, and renewable energy change over time "
-        "for the selected countries."
+        "📊 **What you'll see:** How temperature, emissions, and renewable energy change over time across selected countries. "
+        "This gives you a quick snapshot before diving deeper into patterns and predictions."
     )
 
+    st.markdown("**Data Coverage:** How much data do we have?")
     coverage_cols = st.columns(3)
-    coverage_cols[0].metric("Countries", f"{filtered_df['Country'].nunique()}")
-    coverage_cols[1].metric("Years", f"{filtered_df['Year'].nunique()}")
-    coverage_cols[2].metric("Records", f"{len(filtered_df)}")
+    with coverage_cols[0]:
+        st.metric("Countries", f"{filtered_df['Country'].nunique()}")
+        st.caption("Number of countries in your selection")
+    with coverage_cols[1]:
+        st.metric("Years", f"{filtered_df['Year'].nunique()}")
+        st.caption("Years of data available")
+    with coverage_cols[2]:
+        st.metric("Records", f"{len(filtered_df)}")
+        st.caption("Total data points")
 
     grouped = filtered_df.groupby("Year", as_index=False).mean(numeric_only=True)
     first_year = grouped.iloc[0]
     last_year = grouped.iloc[-1]
 
+    st.markdown("**Latest Trends:**")
     kpi_cols = st.columns(3)
-    kpi_cols[0].metric(
-        "Avg Temperature (degC)",
-        f"{last_year['Avg_Temperature_degC']:.2f}",
-        f"{last_year['Avg_Temperature_degC'] - first_year['Avg_Temperature_degC']:.2f} vs {int(first_year['Year'])}",
-    )
-    kpi_cols[1].metric(
-        "CO2 per Capita (tons)",
-        f"{last_year['CO2_Emissions_tons_per_capita']:.2f}",
-        f"{last_year['CO2_Emissions_tons_per_capita'] - first_year['CO2_Emissions_tons_per_capita']:.2f} vs {int(first_year['Year'])}",
-    )
-    kpi_cols[2].metric(
-        "Renewable Energy (%)",
-        f"{last_year['Renewable_Energy_pct']:.2f}",
-        f"{last_year['Renewable_Energy_pct'] - first_year['Renewable_Energy_pct']:.2f} vs {int(first_year['Year'])}",
-    )
+    with kpi_cols[0]:
+        temp_change = last_year['Avg_Temperature_degC'] - first_year['Avg_Temperature_degC']
+        st.metric(
+            "Average Temperature",
+            f"{last_year['Avg_Temperature_degC']:.2f}°C",
+            f"{temp_change:+.2f}°C since {int(first_year['Year'])}",
+            delta_color="inverse"
+        )
+        st.caption("🌡️ Higher = warmer; rising temperatures increase risk of heat stress, droughts, and ecosystem disruption.")
+    with kpi_cols[1]:
+        co2_change = last_year['CO2_Emissions_tons_per_capita'] - first_year['CO2_Emissions_tons_per_capita']
+        st.metric(
+            "CO2 per Person",
+            f"{last_year['CO2_Emissions_tons_per_capita']:.2f} tons",
+            f"{co2_change:+.2f} tons since {int(first_year['Year'])}",
+            delta_color="inverse"
+        )
+        st.caption("♻️ Each person's share of emissions; higher = more energy/transport/industry reliance on fossil fuels.")
+    with kpi_cols[2]:
+        renew_change = last_year['Renewable_Energy_pct'] - first_year['Renewable_Energy_pct']
+        st.metric(
+            "Renewable Energy",
+            f"{last_year['Renewable_Energy_pct']:.2f}%",
+            f"{renew_change:+.2f}% since {int(first_year['Year'])}",
+            delta_color="normal"
+        )
+        st.caption("⚡ Share of energy from wind, solar, hydro; higher = less dependence on coal/oil/gas.")
 
-    st.subheader("Average temperature trend")
+    st.subheader("📈 Temperature Over Time")
+    st.markdown(
+        "**What to look for:** Is the line going up or down? An upward trend shows warming; a downward trend shows cooling. "
+        "Even small year-to-year changes can cause big impacts when repeated over decades."
+    )
     line_fig = px.line(
         grouped,
         x="Year",
@@ -582,8 +606,12 @@ elif st.session_state.current_page == "Overview":
     )
     st.plotly_chart(line_fig, use_container_width=True)
 
-    st.subheader("Extreme weather events (latest year)")
     latest_year = int(grouped["Year"].max())
+    st.subheader("⛈️ Extreme Weather Events (Latest Year)")
+    st.markdown(
+        "**What this shows:** Which countries experienced the most extreme weather (hurricanes, floods, heatwaves, etc.) "
+        f"in {latest_year}. Longer bars = more events = higher climate impact and greater need for disaster preparedness."
+    )
     latest_df = filtered_df[filtered_df["Year"] == latest_year]
     top_events = latest_df.nlargest(10, "Extreme_Weather_Events")
     bar_fig = px.bar(
@@ -595,7 +623,7 @@ elif st.session_state.current_page == "Overview":
     )
     st.plotly_chart(bar_fig, use_container_width=True)
 
-    st.subheader("Key takeaways")
+    st.subheader("🔍 Quick Insights")
     country_delta = (
         filtered_df.sort_values("Year")
         .groupby("Country")
@@ -626,13 +654,14 @@ elif st.session_state.current_page == "Overview":
     deltas["temp_change"] = deltas["last_temp"] - deltas["first_temp"]
     top_warming = deltas.sort_values("temp_change", ascending=False).head(5)
     st.markdown(
-        "- Temperature change leaders (selected range): "
-        + ", ".join(
-            f"{row['Country']} (+{row['temp_change']:.2f}C)" for _, row in top_warming.iterrows()
+        "**Countries with the biggest temperature increases:**\n- "
+        + "\n- ".join(
+            f"{row['Country']}: +{row['temp_change']:.2f}°C (most at risk for climate impacts)" for _, row in top_warming.iterrows()
         )
     )
     st.markdown(
-        "- Use the Explore Patterns section to inspect associations and the Modeling section for projections."
+        "💡 **Next steps:** Use *Explore Patterns* to spot relationships between emissions and temperature, "
+        "and use *Modeling & Prediction* to forecast future trends."
     )
 
     if show_technical:
@@ -645,11 +674,15 @@ elif st.session_state.current_page == "Overview":
 elif st.session_state.current_page == "Explore Patterns":
     st.subheader("What to look for")
     st.write(
-        "Outcome: identify associations, not causation. These charts help spot patterns that can "
-        "inform deeper analysis."
+        "🔎 **Purpose:** Find relationships between different metrics. If two things move together, it might mean one influences the other—or they might both be influenced by something else. "
+        "These patterns are clues for deeper investigation, not proof of cause-and-effect."
     )
 
-    st.subheader("CO2 emissions vs temperature")
+    st.subheader("🌍 Emissions vs. Temperature")
+    st.markdown(
+        "**What to look for:** Do points cluster along a diagonal line going up? That would suggest higher emissions are associated with higher temperatures. "
+        "Each colored dot = one country in one year. Dots farther right have higher emissions; dots higher have warmer temperatures."
+    )
     scatter_fig = px.scatter(
         filtered_df,
         x="CO2_Emissions_tons_per_capita",
@@ -658,8 +691,13 @@ elif st.session_state.current_page == "Explore Patterns":
         title="CO2 emissions per capita vs average temperature",
     )
     st.plotly_chart(scatter_fig, use_container_width=True)
+    st.caption("⚠️ Note: Countries with different sizes and industries will have different patterns. This doesn't prove causation—just shows association.")
 
-    st.subheader("Renewable energy vs CO2 emissions")
+    st.subheader("⚡ Renewable Energy vs. Emissions")
+    st.markdown(
+        "**What to look for:** Do dots form a line going down-right? That would suggest higher renewable energy is associated with lower emissions. "
+        "Countries farther right use more renewable energy; countries higher have more emissions. If the trend goes down-right, renewables may be helping reduce emissions."
+    )
     scatter_fig2 = px.scatter(
         filtered_df,
         x="Renewable_Energy_pct",
@@ -668,15 +706,21 @@ elif st.session_state.current_page == "Explore Patterns":
         title="Renewable energy share vs CO2 emissions per capita",
     )
     st.plotly_chart(scatter_fig2, use_container_width=True)
+    st.caption("💡 Tip: Countries that invested in renewables earlier tend to have lower current emissions.")
 
-    st.subheader("Distribution of rainfall")
+    st.subheader("🌧️ Rainfall Patterns")
+    st.markdown(
+        "**What this shows:** How rainfall is distributed across all countries and years. A peak on the left means most places get less rain; "
+        "a peak on the right means more rain. Extreme rainfall can cause floods; too little causes droughts."
+    )
     hist_fig = px.histogram(
         filtered_df,
         x="Rainfall_mm",
         nbins=20,
-        title="Rainfall distribution",
+        title="Rainfall distribution across selected countries and years",
     )
     st.plotly_chart(hist_fig, use_container_width=True)
+    st.caption("📊 The bars show how many observations (country-year combinations) fall into each rainfall range.")
 
     if show_technical:
         with st.expander("Interpretation guardrails"):
@@ -686,10 +730,10 @@ elif st.session_state.current_page == "Explore Patterns":
             )
 
 elif st.session_state.current_page == "Modeling & Prediction":
-    st.subheader("Baseline temperature model")
+    st.subheader("🤖 Baseline Temperature Model")
     st.write(
-        "This baseline model predicts average temperature using a time-aware split. "
-        "It is designed for interpretability, not for high-accuracy forecasting."
+        "📊 **What this does:** A simple, explainable model that learns the relationship between emissions, renewable energy, weather, and temperature. "
+        "It splits data into a training period (to learn) and a test period (to verify). The goal is clarity over precision."
     )
 
     train_df, test_df = time_aware_split(filtered_df)
@@ -701,33 +745,52 @@ elif st.session_state.current_page == "Modeling & Prediction":
     y_pred = model.predict(X_test)
     metrics = model_metrics(y_test, y_pred)
 
+    st.markdown("**Model Performance (on test data):**")
     metric_cols = st.columns(3)
-    metric_cols[0].metric("MAE", f"{metrics['MAE']:.3f}")
-    metric_cols[1].metric("RMSE", f"{metrics['RMSE']:.3f}")
-    metric_cols[2].metric("R2", f"{metrics['R2']:.3f}")
+    with metric_cols[0]:
+        st.metric("MAE", f"{metrics['MAE']:.3f}°C")
+        st.caption("Average prediction error. Lower is better. E.g., 0.5°C means most predictions are within ±0.5°C of actual.")
+    with metric_cols[1]:
+        st.metric("RMSE", f"{metrics['RMSE']:.3f}°C")
+        st.caption("(Root Mean Squared Error) Penalizes large mistakes more. Another way to measure how far off predictions are.")
+    with metric_cols[2]:
+        st.metric("R² Score", f"{metrics['R2']:.3f}")
+        st.caption("How much variation the model explains. 1.0 = perfect; 0.5 = explains half; 0 = no better than guessing average.")
 
-    st.write(
-        "Outcome: MAE and RMSE show typical error size in degrees Celsius; lower is better. "
-        "R2 indicates how much of the variance is explained by the model."
+    st.info(
+        "💡 **What this means:** These numbers tell you if the model is trustworthy. If R² > 0.6 and MAE is small, predictions are fairly reliable. "
+        "If R² < 0.4, the model is missing important factors and should be used with caution."
     )
 
+    st.subheader("📋 Test Results")
+    st.markdown("**Actual vs. Predicted temperatures on test data:**")
     results_df = test_df[["Year", "Country", "Avg_Temperature_degC"]].copy()
     results_df["Predicted_Avg_Temperature_degC"] = y_pred
+    results_df["Error (°C)"] = (results_df["Avg_Temperature_degC"] - results_df["Predicted_Avg_Temperature_degC"]).round(3)
     st.dataframe(results_df, use_container_width=True, hide_index=True)
+    st.caption("🔍 Check the Error column: small numbers mean good predictions; large numbers mean the model struggled.")
 
-    st.subheader("Forecasts (existing model_predictions.csv)")
+    st.subheader("🔮 Future Temperature Forecasts")
+    st.markdown(
+        "**What to expect:** Based on recent trends, these lines show where each country's temperature might head. "
+        "Upward slopes = warming forecast; flat lines = stable; downward = cooling (rare)."
+    )
     if pred_df.empty:
-        st.info("No prediction file found at data/processed/v1/model_predictions.csv.")
+        st.warning("⚠️ No prediction file found at data/processed/v1/model_predictions.csv. Run the modeling notebook to generate forecasts.")
     else:
         pred_filtered = pred_df[pred_df["Country"].isin(selected_countries)]
-        pred_fig = px.line(
-            pred_filtered,
-            x="Year",
-            y="Predicted_Avg_Temperature_degC",
-            color="Country",
-            title="Projected temperature (2025+)",
-        )
-        st.plotly_chart(pred_fig, use_container_width=True)
+        if pred_filtered.empty:
+            st.info("No predictions available for the selected countries.")
+        else:
+            pred_fig = px.line(
+                pred_filtered,
+                x="Year",
+                y="Predicted_Avg_Temperature_degC",
+                color="Country",
+                title="Projected temperature (2025+)",
+            )
+            st.plotly_chart(pred_fig, use_container_width=True)
+            st.caption("⚠️ **Important:** These are based on past trends. They assume nothing changes. Real futures depend on policy, technology, and behavior.")
 
     if show_technical:
         with st.expander("Forecast limitations"):
@@ -736,10 +799,15 @@ elif st.session_state.current_page == "Modeling & Prediction":
                 "or emissions scenario changes. Treat results as short-term projections only."
             )
 
-    st.subheader("Prediction tool")
+    st.subheader("💻 Custom Prediction Tool")
     st.write(
-        "Outcome: estimate average temperature for a specific scenario using the baseline model. "
-        "Use this as a directional indicator only."
+        "🎯 **What this does:** Enter specific values (emissions, renewables, extreme events, etc.) to estimate what temperature would be. "
+        "Use this to explore 'what-if' scenarios—e.g., 'What if renewables doubled?' or 'What if extreme events tripled?'"
+    )
+    
+    st.info(
+        "💡 **Instructions:** Pick a country and year, then adjust each factor. Press 'Predict temperature' to see the model's estimate. "
+        "All fields use recent actual values as defaults—change them to explore different scenarios."
     )
 
     full_X, full_y = build_features(filtered_df)
@@ -752,45 +820,53 @@ elif st.session_state.current_page == "Modeling & Prediction":
     default_row = country_data.iloc[-1] if not country_data.empty else filtered_df.iloc[-1]
 
     with st.form("prediction_form"):
-        pred_country = st.selectbox("Country", tool_country_options, index=0)
+        pred_country = st.selectbox("📍 Country", tool_country_options, index=0)
         pred_year = st.number_input(
-            "Year",
+            "📅 Year",
             min_value=int(clean_df["Year"].min()),
             max_value=int(clean_df["Year"].max()) + 5,
             value=int(default_row["Year"]),
             step=1,
+            help="Pick a year to predict for. Going beyond 2024 extrapolates current trends."
         )
         pred_co2 = st.number_input(
-            "CO2 emissions per capita (tons)",
+            "🏭 CO2 emissions per capita (tons)",
             value=float(default_row["CO2_Emissions_tons_per_capita"]),
+            help="Higher = more emissions from energy, transport, industry. Try reducing this to see how important it is."
         )
         pred_sea = st.number_input(
-            "Sea level rise (mm)",
+            "🌊 Sea level rise (mm)",
             value=float(default_row["Sea_Level_Rise_mm"]),
+            help="How much ocean levels are rising. Related to warming; higher values = more climate change impact."
         )
         pred_rain = st.number_input(
-            "Rainfall (mm)",
+            "🌧️ Rainfall (mm)",
             value=float(default_row["Rainfall_mm"]),
+            help="Annual rainfall. Major droughts have low values (~200mm); wet regions have 2000mm+."
         )
         pred_pop = st.number_input(
-            "Population",
+            "👥 Population",
             value=float(default_row["Population"]),
             step=1.0,
+            help="Total population. Larger populations typically consume more energy and emit more."
         )
         pred_renew = st.number_input(
-            "Renewable energy (%)",
+            "⚡ Renewable energy (%)",
             value=float(default_row["Renewable_Energy_pct"]),
+            help="0% = all fossil fuels; 100% = all renewables. Try increasing this to reduce emissions."
         )
         pred_events = st.number_input(
-            "Extreme weather events",
+            "⛈️ Extreme weather events",
             value=float(default_row["Extreme_Weather_Events"]),
             step=1.0,
+            help="Count of hurricanes, floods, heatwaves, etc. More events = sign of climate instability."
         )
         pred_forest = st.number_input(
-            "Forest area (%)",
+            "🌳 Forest area (%)",
             value=float(default_row["Forest_Area_pct"]),
+            help="0% = no forests; 100% = completely forested. Forests absorb CO2 and regulate climate."
         )
-        submitted = st.form_submit_button("Predict temperature")
+        submitted = st.form_submit_button("🔮 Predict temperature")
 
     if submitted:
         input_df = pd.DataFrame(
@@ -811,4 +887,12 @@ elif st.session_state.current_page == "Modeling & Prediction":
         input_X, _ = build_features(input_df, include_target=False)
         input_X = align_features(input_X, full_X.columns.tolist())
         pred_value = full_model.predict(input_X)[0]
-        st.success(f"Predicted average temperature: {pred_value:.2f} degC")
+        
+        st.success(f"🌡️ **Predicted temperature: {pred_value:.2f}°C**")
+        st.markdown(
+            f"**Scenario:** {pred_country} in {int(pred_year)} with these conditions:\n"
+            f"- CO₂: {pred_co2:.2f} tons/person | Renewables: {pred_renew:.1f}% | Forest: {pred_forest:.1f}%\n"
+            f"- Extreme events: {int(pred_events)} | Rainfall: {pred_rain:.0f}mm\n\n"
+            "**What does this mean?** This temperature is what the model expects based on the inputs you provided and historical patterns. "
+            "Use this to compare different scenarios and understand which factors have the biggest influence on temperature."
+        )

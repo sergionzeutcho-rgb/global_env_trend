@@ -184,69 +184,157 @@ st.markdown("---")
 
 if st.session_state.current_page == "Executive Summary":
     st.subheader("Executive summary")
-    st.write(
-        "Outcome: a concise, stakeholder-friendly view of the most important signals and what they "
-        "imply for awareness and planning."
+    
+    st.markdown(
+        "📌 **What you're seeing:** This summary shows the key environmental trends over the selected "
+        "period, how they have changed, and what actions may be worth considering.\n\n"
+        "**Important note:** The patterns you see reflect observed associations in the data, not proven causes. "
+        "Environmental change is influenced by many factors working together."
     )
 
     summary_grouped = filtered_df.groupby("Year", as_index=False).mean(numeric_only=True)
     summary_first = summary_grouped.iloc[0]
     summary_last = summary_grouped.iloc[-1]
 
+    # Key Metrics
+    st.subheader("🌡️ Key Observations")
+    
     summary_cols = st.columns(3)
+    temp_change = summary_last['Avg_Temperature_degC'] - summary_first['Avg_Temperature_degC']
     summary_cols[0].metric(
-        "Avg Temperature (degC)",
-        f"{summary_last['Avg_Temperature_degC']:.2f}",
-        f"{summary_last['Avg_Temperature_degC'] - summary_first['Avg_Temperature_degC']:.2f} vs {int(summary_first['Year'])}",
+        "Average Temperature",
+        f"{summary_last['Avg_Temperature_degC']:.2f}°C",
+        f"{temp_change:+.2f}°C since {int(summary_first['Year'])}",
+        delta_color="inverse" if temp_change > 0 else "normal"
     )
+    
+    co2_change = summary_last['CO2_Emissions_tons_per_capita'] - summary_first['CO2_Emissions_tons_per_capita']
     summary_cols[1].metric(
-        "CO2 per Capita (tons)",
-        f"{summary_last['CO2_Emissions_tons_per_capita']:.2f}",
-        f"{summary_last['CO2_Emissions_tons_per_capita'] - summary_first['CO2_Emissions_tons_per_capita']:.2f} vs {int(summary_first['Year'])}",
+        "CO2 Emissions (per person)",
+        f"{summary_last['CO2_Emissions_tons_per_capita']:.2f} tons",
+        f"{co2_change:+.2f} tons since {int(summary_first['Year'])}",
+        delta_color="inverse" if co2_change > 0 else "normal"
     )
+    
+    renew_change = summary_last['Renewable_Energy_pct'] - summary_first['Renewable_Energy_pct']
     summary_cols[2].metric(
-        "Renewable Energy (%)",
-        f"{summary_last['Renewable_Energy_pct']:.2f}",
-        f"{summary_last['Renewable_Energy_pct'] - summary_first['Renewable_Energy_pct']:.2f} vs {int(summary_first['Year'])}",
+        "Renewable Energy",
+        f"{summary_last['Renewable_Energy_pct']:.2f}%",
+        f"{renew_change:+.2f}% since {int(summary_first['Year'])}",
+        delta_color="normal" if renew_change > 0 else "inverse"
     )
 
-    st.subheader("Recommendations (based on observed signals)")
-    rec_items = []
-
+    # Plain-language interpretation
+    st.subheader("💡 What This Means")
+    
+    observations = []
+    
     temp_delta = summary_last["Avg_Temperature_degC"] - summary_first["Avg_Temperature_degC"]
+    if temp_delta > 0.3:
+        observations.append(
+            f"**🔴 Temperatures are rising**: Average temperature has increased by {temp_delta:.2f}°C. "
+            "This affects agriculture, water availability, and extreme weather patterns."
+        )
+    elif temp_delta > 0:
+        observations.append(
+            f"**🟡 Slight warming trend**: Temperature has increased by {temp_delta:.2f}°C. "
+            "Continue monitoring as small changes can have significant cumulative effects."
+        )
+    else:
+        observations.append("**🟢 Temperature is stable or declining**: This is positive progress.")
+    
     co2_delta = summary_last["CO2_Emissions_tons_per_capita"] - summary_first["CO2_Emissions_tons_per_capita"]
+    if co2_delta > 0.2:
+        observations.append(
+            f"**🔴 Emissions are increasing**: Per-capita emissions have risen by {co2_delta:.2f} tons. "
+            "This means each person is producing more CO2, which requires policy and behavioral shifts."
+        )
+    elif co2_delta > 0:
+        observations.append(
+            f"**🟡 Slight emissions increase**: Per-capita emissions have risen by {co2_delta:.2f} tons. "
+            "Any increase suggests energy demand or fossil fuel dependence is growing."
+        )
+    else:
+        observations.append("**🟢 Emissions are declining**: Decarbonization efforts may be working.")
+    
     renew_delta = summary_last["Renewable_Energy_pct"] - summary_first["Renewable_Energy_pct"]
-    events_delta = summary_last["Extreme_Weather_Events"] - summary_first["Extreme_Weather_Events"]
+    if renew_delta > 2:
+        observations.append(
+            f"**🟢 Renewable energy is growing**: Renewable share has increased by {renew_delta:.2f}%. "
+            "This indicates a transition toward cleaner energy sources."
+        )
+    elif renew_delta > 0:
+        observations.append(
+            f"**🟡 Renewable energy is growing slowly**: Renewable share has increased by {renew_delta:.2f}%. "
+            "Accelerating the transition could help reduce emissions faster."
+        )
+    else:
+        observations.append("**🔴 Renewable energy share is declining**: Fossil fuels may be taking a larger share.")
+    
+    for obs in observations:
+        st.markdown(obs)
+
+    # Recommendations
+    st.subheader("📋 Recommended Actions")
+    
+    rec_items = []
+    rec_details = []
 
     if temp_delta > 0:
-        rec_items.append(
-            "Temperature trend is rising; prioritize risk communication and adaptation planning."
+        rec_items.append("Climate adaptation and risk management")
+        rec_details.append(
+            "With rising temperatures, prioritize: (1) Infrastructure planning for extreme weather, "
+            "(2) Agricultural drought preparedness, (3) Public health systems for heat stress, "
+            "(4) Community awareness campaigns."
         )
+    
+    events_delta = summary_last["Extreme_Weather_Events"] - summary_first["Extreme_Weather_Events"]
     if events_delta > 0:
-        rec_items.append(
-            "Extreme events appear to increase; strengthen monitoring and resilience planning."
+        rec_items.append("Strengthen disaster resilience")
+        rec_details.append(
+            "Extreme weather events are increasing. Focus on: (1) Early warning systems, "
+            "(2) Emergency response protocols, (3) Community shelters and evacuation plans, (4) Insurance schemes."
         )
+    
     if co2_delta > 0:
-        rec_items.append(
-            "Emissions per capita are up; reinforce mitigation policies and sector tracking."
+        rec_items.append("Accelerate emissions reduction")
+        rec_details.append(
+            "Rising per-capita emissions indicate growing energy demand. Actions: (1) Promote energy efficiency "
+            "in buildings and transportation, (2) Incentivize renewable energy adoption, (3) Reduce industrial "
+            "emissions through technology, (4) Track progress quarterly."
         )
+    
     if renew_delta > 0:
-        rec_items.append(
-            "Renewables are increasing; highlight progress and identify high-impact transition levers."
+        rec_items.append("Capitalize on renewable momentum")
+        rec_details.append(
+            "Renewable energy growth is a strength. Build on this by: (1) Expanding grid infrastructure for "
+            "distributed renewables, (2) Training workforce for clean energy jobs, (3) Removing policy barriers, "
+            "(4) Setting ambitious renewable targets."
         )
+    
     if not rec_items:
-        rec_items.append(
-            "Signals are mixed; continue monitoring and validate trends with updated data."
+        rec_items.append("Maintain current monitoring")
+        rec_details.append(
+            "Signals are mixed. Continue: (1) Regular data collection, (2) Stakeholder engagement, "
+            "(3) Trend analysis, (4) Scenario planning for future interventions."
         )
 
-    for item in rec_items[:4]:
-        st.markdown(f"- {item}")
+    for i, (rec, detail) in enumerate(zip(rec_items, rec_details)):
+        with st.expander(f"**{i+1}. {rec}**", expanded=(i==0)):
+            st.markdown(detail)
 
-    st.caption(
-        "These recommendations reflect observed associations and trends, not causal proof."
+    st.info(
+        "⚠️ **Important disclaimer:** These recommendations are based on observed data patterns, not proven causation. "
+        "Environmental changes result from complex interactions of multiple factors. Consult domain experts and conduct "
+        "rigorous impact assessments before implementing major policy changes."
     )
 
-    st.subheader("Country-specific recommendations")
+    st.subheader("🌍 Country-Specific Findings")
+    st.markdown(
+        "Below is a detailed breakdown by country showing where the biggest changes are happening. "
+        "Use this to identify which countries face the greatest challenges or have the strongest progress."
+    )
+    
     years_by_country = (
         filtered_df.sort_values("Year")
         .groupby("Country")["Year"]
@@ -301,30 +389,61 @@ if st.session_state.current_page == "Executive Summary":
     deltas["events_delta"] = deltas["events_last"] - deltas["events_first"]
 
     rec_rows = []
+    status_rows = []
+    
     for _, row in deltas.iterrows():
         country_recs = []
+        status_symbols = []
+        
         if row["temp_delta"] >= temp_threshold:
-            country_recs.append("Warming trend exceeds threshold")
+            country_recs.append("⚠️ Significant warming")
+            status_symbols.append("🔴")
+        elif row["temp_delta"] > 0:
+            country_recs.append("Moderate warming")
+            status_symbols.append("🟡")
+        else:
+            status_symbols.append("🟢")
+        
         if row["events_delta"] >= events_threshold:
-            country_recs.append("Extreme events rising above threshold")
+            country_recs.append("⚠️ Extreme events rising")
+            if "🔴" not in status_symbols and status_symbols:
+                status_symbols[0] = "🔴"
+        elif row["events_delta"] > 0:
+            if "🟢" in status_symbols:
+                status_symbols[0] = "🟡"
+        
         if row["co2_delta"] >= co2_threshold:
-            country_recs.append("CO2 per capita increasing")
+            country_recs.append("⚠️ Emissions increasing")
+            if "🔴" not in status_symbols and status_symbols:
+                status_symbols[0] = "🔴"
+        elif row["co2_delta"] > 0:
+            if "🟢" in status_symbols:
+                status_symbols[0] = "🟡"
+        
         if row["renew_delta"] >= renew_threshold:
-            country_recs.append("Renewables growing; sustain momentum")
-
+            country_recs.append("✅ Renewable energy growing")
+            if status_symbols and "🔴" not in status_symbols[0]:
+                status_symbols[0] = "🟢"
+        
         if country_recs:
+            status = status_symbols[0] if status_symbols else "⚪"
             rec_rows.append(
                 {
+                    "Status": status,
                     "Country": row["Country"],
-                    "Recommendation": "; ".join(country_recs),
+                    "Key Findings": "; ".join(country_recs),
                 }
             )
 
     if rec_rows:
         rec_df = pd.DataFrame(rec_rows).sort_values("Country")
         st.dataframe(rec_df, use_container_width=True, hide_index=True)
+        
+        st.markdown(
+            "**Legend:** 🔴 = Urgent attention needed | 🟡 = Monitor closely | 🟢 = Positive progress"
+        )
     else:
-        st.info("No country-specific recommendations exceeded the selected thresholds.")
+        st.info("No countries exceeded the selected thresholds. Adjust threshold values in the Filters sidebar to see recommendations.")
 
 elif st.session_state.current_page == "Data Overview":
     st.subheader("Data overview")

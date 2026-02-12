@@ -1,341 +1,251 @@
 # Global Environmental Trends (2000–2024)
 
-Interactive analytics dashboard and reproducible notebooks for climate signals, risk indicators, and explainable forecasting.
-Stakeholder-focused, transparent, and fully documented for Code Institute Data Analytics capstone.
+## Dataset Content
 
----
+* The dataset is sourced from [Kaggle](https://www.kaggle.com/datasets/adilshamim8/temperature). We created a user story in which data analytics can be applied in a real project in the workplace.
+* The dataset has 158 rows and represents environmental records from 19 countries across the globe. It indicates environmental indicators (temperature, emissions, rainfall, renewable energy, extreme weather events, forest coverage) and their respective values for the period between 2000 and 2024.
 
-## Assessment Alignment Checklist
-
-- **LO1.1 Ethics, privacy, governance:** Documented in README and dashboard notes; transparent modeling, versioned outputs, and clear limitations.
-- **LO1.2 Legal and social implications:** Licensing, GDPR principles, and responsible use are covered in README.
-- **LO2.1 Insight communication:** Narrative captions, plain-language summaries, and stakeholder-focused commentary in dashboard and notebooks.
-- **LO2.2 Visualisation and narratives:** Minimum four plot types, guided dashboard flow, and accessible color palette.
-- **LO2.3 Documentation:** README sections, notebook structure, and code comments align with analysis stages.
-- **LO3.1 Project plan:** Implementation, maintenance, updates, and evaluation included in README and project structure.
-- **LO3.2 Reflection:** Challenges, limitations, and learning journey recorded in README and notebook markdown.
-
-All checklist items are addressed and stipulated in the README, notebooks, and dashboard.
-
----
+|Variable|Meaning|Units|
+|:----|:----|:----|
+|Year|Year of observation|2000 - 2024|
+|Country|Country name|19 countries including United States, China, Germany, Brazil, Australia, India, Nigeria, Russia, Japan, Canada, Mexico, France, Indonesia, United Kingdom, Spain, South Korea, Italy, Saudi Arabia, South Africa|
+|Avg_Temperature_degC|Average temperature in degrees Celsius|5.1 - 28.5|
+|CO2_Emissions_tons_per_capita|Per-capita CO2 emissions in metric tons|0.5 - 20.2|
+|Sea_Level_Rise_mm|Sea level rise in millimeters|0 - 59|
+|Rainfall_mm|Annual rainfall in millimeters|54 - 2726|
+|Population|Total population|19153000 - 1426000000|
+|Renewable_Energy_pct|Percentage of energy from renewable sources|0 - 87.2|
+|Extreme_Weather_Events|Count of extreme weather events reported|2 - 64|
+|Forest_Area_pct|Forest area as percentage of total land area|0.5 - 68.5|
 
 ## Business Requirements
 
-### Context
+As a data analyst, environmental stakeholders and policy teams have asked you to help understand global environmental trends and provide insights to support awareness and planning for climate action.
 
-Stakeholders want a clear view of climate risk signals (temperature, emissions, extreme events) and a simple, explainable projection to support awareness and planning. The solution must be accessible to non-technical users and transparent about limitations.
+Although stakeholders have access to raw environmental data, they need clear visualizations and interpretable insights to understand how different environmental indicators relate to each other and what the future trends might look like. They want to see patterns across countries and time periods to inform decision-making.
 
-### Stakeholder Needs
+* 1—The client is interested in discovering how environmental indicators correlate with each other. Therefore, the client expects data visualizations of the correlated variables to show these relationships clearly.
+* 2—The client is interested in predicting future temperature trends to support planning and risk assessment for the next 3-5 years.
 
-**Primary Stakeholders:**
-- Public and students: accessible insights and context
-- Sustainability teams: trend awareness and risk indicators
-- Analysts and policy teams: correlations and hypothesis validation
+## Hypothesis and how to validate
 
-### Business Requirements
+* Using environmental science knowledge, here are my hypothesis(es):
+* 1: We suspect that higher CO2 emissions per capita are associated with higher average temperature. However, this reflects association, not causation, as climate zones and development levels vary by country.
+	* How to validate: We will conduct a correlation study (Pearson and Spearman) to assess the strength and direction of the association between CO2 emissions per capita and average temperature.
+* 2: We suspect that higher renewable energy percentage is associated with lower or stabilizing CO2 emissions per capita.
+	* How to validate: We will conduct a correlation study to examine the relationship between renewable energy percentage and CO2 emissions per capita. A negative correlation would support this hypothesis.
+* 3: We suspect that extreme weather events have increased over time from 2000 to 2024.
+	* How to validate: We will analyze the time trend of extreme weather events using line plots and calculate the change in event frequency between the first and last years in the dataset. We will also perform regression analysis to test for a statistically significant trend.
+* 4: We suspect that higher forest area percentage is associated with fewer extreme weather events.
+	* How to validate: We will conduct a correlation study to examine the relationship between forest area percentage and extreme weather events. We acknowledge this may show weak association as country-level forest coverage alone is not a strong predictor.
 
-**BR1: Temperature trend awareness**
-- Show how average temperatures changed from 2000 to 2024 by country
-- **Success Criteria:** clear trend visuals and summary metrics
+## The rationale to map the business requirements to the Data Visualisations
 
-**BR2: Emissions relationship**
-- Assess association between CO2 emissions per capita and average temperature
-- **Success Criteria:** correlation findings with clear caveats
+* **Business Requirement 1:** Data Visualisation and Correlation study
+	* As a client, I want to inspect the data related to environmental records so that I can discover how environmental indicators correlate with each other.
+	* As a client, I want to conduct a correlation study (Pearson and Spearman) to understand better how the variables are correlated to temperature and other key metrics so that I can discover meaningful relationships.
+	* As a client, I want to plot the main variables against each other to visualize insights and discover how environmental indicators relate to climate trends.
 
-**BR3: Climate risk indicators**
-- Track extreme weather events over time and identify high-count countries
-- **Success Criteria:** ranking chart and time trends
+* **Business Requirement 2:** Temperature Trend Prediction
+	* As a client, I want to see predicted temperature trends for the next 3-5 years so that I can plan for climate risks and adaptation strategies.
+	* As a client, I want to understand the model's accuracy metrics (MAE, RMSE, R²) so that I can assess the reliability of the predictions.
+	* As a client, I want to see visualizations comparing actual historical data with predictions so that I can evaluate the model's performance.
 
-**BR4: Mitigation signals**
-- Assess association between renewable energy percent and CO2 emissions
-- **Success Criteria:** correlation findings and stakeholder interpretation
+## Dashboard Design
 
-**BR5: Environmental resilience**
-- Explore forest area percent vs extreme events or rainfall
-- **Success Criteria:** exploratory evidence with limitations
+### Page 1: Executive Summary
+* Quick project summary and key findings
+	* Overview of the project's purpose and goals
+	* Key observations section showing:
+		* Average temperature change over the selected period
+		* CO2 emissions per capita change
+		* Renewable energy percentage change
+	* Plain-language interpretation section explaining what these trends mean in practical terms
+	* Recommended actions based on observed trends (climate adaptation, emissions reduction, renewable energy growth, etc.)
+	* Country-specific findings table showing which countries face the greatest challenges or have made the strongest progress
+	* Status indicators (red/yellow/green) to highlight urgent attention areas
 
-**BR6: Forecasting**
-- Provide a short-term, explainable temperature projection (3-5 years)
-- **Success Criteria:** time-aware split, MAE/RMSE reported, forecast export
+### Page 2: Data Overview
+* Data overview and quality assessment
+	* Summary metrics: number of countries, years covered, total records, and indicators tracked
+	* Data quality assessment showing missing values, duplicate rows, and data integrity status
+	* Missing values by column if applicable
+	* Key fields glossary with definitions and context for each metric
+	* Sample data table showing the first 10 records from the dataset with country flag emojis
+	* Download options for full dataset, data glossary, and quality report in CSV format
 
-### User Stories
+### Page 3: Overview
+* Key signals and trends
+	* Data coverage metrics (countries, years, records)
+	* Latest trends showing:
+		* Average temperature with change indicator
+		* CO2 per person with change indicator
+		* Renewable energy percentage with change indicator
+	* Plain-language captions explaining what each metric means
+	* Temperature over time line chart with guidance on interpretation
+	* Extreme weather events bar chart showing top 10 countries in the latest year
+	* Quick insights section highlighting:
+		* Countries with biggest temperature increases
+		* Countries with highest renewable energy growth
+		* Overall trends summary
 
-**US1:** As a policy analyst, I want to see long-term temperature trends by country, so I can communicate warming patterns clearly.
+### Page 4: Explore Patterns
+* Correlation and relationship analysis
+	* Scatter plots showing:
+		* CO2 emissions vs. average temperature
+		* Renewable energy vs. CO2 emissions
+		* Forest area vs. extreme weather events
+		* Rainfall vs. temperature
+	* Each plot includes:
+		* Color coding by country
+		* Trend lines where appropriate
+		* Plain-language interpretation of what the pattern shows
+	* Correlation heatmap showing relationships between all key metrics
+	* Technical notes toggle to show/hide detailed statistical information
+	* Time series visualizations showing trends over the full period
 
-**US2:** As a sustainability lead, I want to compare emissions and renewable energy indicators, so I can discuss mitigation progress.
+### Page 5: Modeling & Prediction
+* Predictive modeling and forecasting
+	* Model overview explaining the approach (per-country linear regression)
+	* Model performance metrics section showing:
+		* Mean Absolute Error (MAE)
+		* Root Mean Squared Error (RMSE)
+		* R² score
+	* Plain-language explanation of what these metrics mean
+	* Training and test split information (time-aware split at 2018)
+	* Temperature forecast visualization showing:
+		* Historical data (2000-2024)
+		* Predictions for 2025-2029
+		* Comparison between actual and predicted values
+	* Country selector to view predictions for specific countries
+	* Download button to export predictions as CSV
+	* Model limitations and caveats clearly stated
 
-**US3:** As a non-technical user, I want a simple dashboard view, so I can explore climate data without coding.
+### Page 6: Analytics Hub
+* Advanced analytics and insights
+	* Data quality dashboard with completeness and uniqueness metrics
+	* Overall quality score calculation
+	* Correlation heatmap showing relationships between all key metrics with color-coded values
+	* Anomaly detection identifying unusual data points by country using z-score method
+	* Downloadable quality reports and anomaly data in CSV format
 
-**US4:** As a researcher, I want transparent hypothesis tests, so I can evaluate the evidence behind each claim.
+### Page 7: Comparison Tool
+* Country-to-country comparison
+	* Multi-select up to 5 countries for side-by-side comparison
+	* Latest year comparison bar charts for temperature, emissions, renewables, and extreme events
+	* Trends over time with selectable metrics
+	* Interactive line charts showing historical patterns for selected countries
+	* Downloadable comparison data in CSV format
 
----
+### Page 8: Scenario Builder
+* Interactive what-if analysis tool
+	* Create named scenarios with target years (2025-2050)
+	* Adjust environmental parameters: CO₂ reduction, renewable energy increase, forest area change, extreme events, rainfall, and population growth
+	* Real-time temperature prediction based on scenario inputs
+	* Visual comparison between baseline and scenario outcomes
+	* Shows temperature difference and impact interpretation
 
-## Project Objectives
+## Project Hypothesis and Validation
 
-1. Load and clean the environmental dataset with quality checks
-2. Perform EDA to identify trends and correlations
-3. Validate hypotheses using simple statistical tests
-4. Train and evaluate an explainable forecasting model
-5. Deliver a Streamlit dashboard for stakeholder exploration
-6. Document findings, limitations, and next steps
+### Hypothesis 1: CO2 Emissions vs Temperature
+* **Hypothesis:** Higher CO2 emissions per capita are associated with higher average temperature.
+* **Validation:** We conducted a Pearson correlation analysis on the dataset.
+* **Result:** The analysis showed a moderate negative correlation (approximately -0.3 to -0.4).
+* **Interpretation:** The negative correlation likely reflects climate zone and development differences rather than a causal relationship. Countries in colder climates (like Russia, Canada) tend to have higher emissions due to heating needs and industrial activity, while countries in warmer climates (like Nigeria, Indonesia) have lower per-capita emissions. This demonstrates the importance of not inferring causation from correlation in climate data.
+* **Conclusion:** The hypothesis is not supported by the data in the expected direction. However, this provides valuable insight into the complexity of climate-emissions relationships and the importance of controlling for geographic and developmental factors.
 
----
+### Hypothesis 2: Renewable Energy vs CO2 Emissions
+* **Hypothesis:** Higher renewable energy percentage is associated with lower or stabilizing CO2 emissions per capita.
+* **Validation:** We conducted a correlation study examining the relationship between renewable energy percentage and CO2 emissions per capita.
+* **Result:** The analysis showed a moderate negative correlation (approximately -0.4 to -0.5).
+* **Interpretation:** Countries with higher renewable energy shares tend to have lower per-capita emissions, which aligns with the expected relationship. However, this is an association and not proof of causation, as countries with lower emissions may invest more in renewables for various policy and economic reasons.
+* **Conclusion:** The hypothesis is supported by the observed association. This suggests that renewable energy adoption is a practical indicator for tracking decarbonization efforts, though multiple factors influence this relationship.
 
-## Project Hypotheses
+### Hypothesis 3: Extreme Weather Events Trend
+* **Hypothesis:** Extreme weather events have increased over time from 2000 to 2024.
+* **Validation:** We analyzed time trends using line plots and calculated the change in event frequency between 2000 and 2024. We also performed linear regression to test for a statistically significant trend.
+* **Result:** Most countries show an increasing trend in extreme weather events, with global averages rising from approximately 10-15 events in 2000 to 25-30 events in 2024.
+* **Interpretation:** The upward trend supports climate risk awareness. However, we must acknowledge potential reporting bias, as improved monitoring and reporting systems over this period may partly explain the increase. Despite this caveat, the consistent pattern across multiple countries suggests a real increase in extreme weather frequency.
+* **Conclusion:** The hypothesis is supported by the data. The increasing trend in extreme weather events highlights the growing need for disaster preparedness and climate adaptation strategies.
 
-- **H1:** Higher CO2 emissions per capita are associated with higher average temperature (association, not causation)
-- **H2:** Higher renewable energy percent is associated with lower or stabilizing CO2 emissions per capita
-- **H3:** Extreme weather events increase over time from 2000 to 2024
-- **H4 (optional):** Higher forest area percent is associated with fewer extreme events
-
----
-
-## Dataset Description
-
-**Source:** Kaggle - Global Environmental Trends 2000-2024
-
-**Records:** 156 rows across 19 countries (2000-2024)
-
-**Features (selected):**
-- `Year`
-- `Country`
-- `Avg_Temperature_degC`
-- `CO2_Emissions_tons_per_capita`
-- `Sea_Level_Rise_mm`
-- `Rainfall_mm`
-- `Population`
-- `Renewable_Energy_pct`
-- `Extreme_Weather_Events`
-- `Forest_Area_pct`
-
----
+### Hypothesis 4: Forest Area vs Extreme Events
+* **Hypothesis:** Higher forest area percentage is associated with fewer extreme weather events.
+* **Validation:** We conducted a correlation study between forest area percentage and extreme weather events.
+* **Result:** The analysis showed a weak association (correlation close to 0 or slightly negative).
+* **Interpretation:** Forest coverage alone is not a strong predictor of extreme weather events at the country level. This makes sense because extreme weather is influenced by many factors including ocean currents, atmospheric patterns, geography, and global climate systems. Forest area may provide localized benefits (soil stability, flood mitigation) but does not significantly reduce country-level extreme weather event counts.
+* **Conclusion:** The hypothesis is not strongly supported by the data. While forest conservation remains important for many environmental reasons, it is not a primary factor in reducing extreme weather event frequency at the national scale.
 
 ## Project Structure
 
 ```
 global_env_trend/
-├── app.py
+├── app.py                          # Streamlit dashboard application
 ├── data/
 │   ├── raw/
 │   │   └── v1/
-│   │       └── environmental_trends.csv
+│   │       └── environmental_trends.csv    # Original Kaggle dataset
 │   └── processed/
 │       └── v1/
-│           ├── environmental_trends_clean.csv
-│           └── model_predictions.csv
+│           ├── environmental_trends_clean.csv    # Cleaned dataset
+│           └── model_predictions.csv             # Temperature forecasts
 ├── jupyter_notebooks/
-│   ├── 01_data_ingestion_quality_checks.ipynb
-│   ├── 02_eda_descriptive_stats.ipynb
-│   ├── 03_hypothesis_testing.ipynb
-│   └── 04_predictive_modeling.ipynb
-├── Procfile
-├── README.md
-├── requirements.txt
-└── setup.sh
+│   ├── 01_data_ingestion_quality_checks.ipynb    # Data cleaning and validation
+│   ├── 02_eda_descriptive_stats.ipynb            # Exploratory data analysis
+│   ├── 03_hypothesis_testing.ipynb               # Statistical hypothesis tests
+│   └── 04_predictive_modeling.ipynb              # ML model training and forecasting
+├── Procfile                        # Heroku deployment configuration
+├── requirements.txt                # Python dependencies
+├── setup.sh                        # Streamlit configuration for Heroku
+└── README.md                       # This file
 ```
 
----
+## Methodology and Workflow
 
-## Key Findings
+### Notebook Execution Order
 
-### Hypothesis Testing
+**The notebooks must be run in sequence:**
 
-**H1: CO2 Emissions vs Temperature**
-- Result: moderate negative association (see notebook for exact correlation)
-- Interpretation: likely reflects climate zone and development differences, not causality
+1. **01_data_ingestion_quality_checks.ipynb**
+   - Purpose: Load raw data, check quality, clean, and export
+   - Inputs: `data/raw/v1/environmental_trends.csv`
+   - Outputs: `data/processed/v1/environmental_trends_clean.csv`
 
-**H2: Renewable Energy vs CO2 Emissions**
-- Result: moderate negative association
-- Interpretation: higher renewables are associated with lower emissions per capita, but not causal proof
+2. **02_eda_descriptive_stats.ipynb**
+   - Purpose: Explore data, generate summary statistics, create visualizations
+   - Inputs: `data/processed/v1/environmental_trends_clean.csv`
+   - Outputs: EDA insights and plots
 
-**H3: Extreme Weather Events Trend**
-- Result: increasing trends in most countries, with variability
-- Interpretation: supports climate risk awareness, with reporting bias caveats
+3. **03_hypothesis_testing.ipynb**
+   - Purpose: Test all 4 hypotheses using correlation and trend analysis
+   - Inputs: `data/processed/v1/environmental_trends_clean.csv`
+   - Outputs: Hypothesis validation results
 
-**H4: Forest Area vs Extreme Events**
-- Result: weak association
-- Interpretation: forest coverage alone is not a strong predictor at country level
+4. **04_predictive_modeling.ipynb**
+   - Purpose: Train temperature forecasting model, generate predictions
+   - Inputs: `data/processed/v1/environmental_trends_clean.csv`
+   - Outputs: `data/processed/v1/model_predictions.csv`
 
-### Modeling
+**Note:** Notebook 1 must be run first as it creates the clean dataset used by all others. Notebook 4 should be run last as it generates the predictions displayed in the dashboard.
 
-- Per-country linear regression with a time-aware split
-- Forecasts exported to `data/processed/v1/model_predictions.csv`
-- Metrics reported in the modeling notebook
+## Unfixed Bugs
 
----
+* No bugs to report
 
-## Installation and Setup
+## Prerequisites
 
-### Prerequisites
-- Python 3.12.x
-- Git
-- VS Code (recommended)
+Before running this project, ensure you have:
 
-### Step 1: Clone the Repository
+* **Python 3.12 or higher** (project tested with Python 3.12)
+* **pip** (Python package manager)
+* **Git** (for cloning the repository)
+* **8GB RAM minimum** (recommended for running notebooks with profiling)
+* **Operating System:** Windows, macOS, or Linux
 
-```bash
-git clone <your-repo-url>
-cd global_env_trend
-```
-
-### Step 2: Create Virtual Environment
-
-```bash
-python -m venv .venv
-```
-
-### Step 3: Activate Virtual Environment
-
-**Windows:**
-```bash
-.venv\Scripts\activate
-```
-
-**Mac/Linux:**
-```bash
-source .venv/bin/activate
-```
-
-### Step 4: Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
-## Usage
-
-### 1. Jupyter Notebooks
-
-Open and run the notebooks in order:
-
-```bash
-jupyter notebook jupyter_notebooks/01_data_ingestion_quality_checks.ipynb
-```
-
-### 2. Streamlit Dashboard
-
-```bash
-python -m streamlit run app.py
-```
-
-Or in Windows with a full path to Python:
-
-```bash
-".venv/Scripts/python.exe" -m streamlit run app.py
-```
-
-The app opens at `http://localhost:8501`.
-
----
-
-## Technologies Used
-
-**Core:**
-- Python 3.12.x
-- Jupyter Notebook
-
-**Data Processing:**
-- pandas
-- numpy
-
-**Visualization:**
-- matplotlib
-- seaborn
-- plotly
-
-**Machine Learning:**
-- scikit-learn
-
-**Dashboard:**
-- Streamlit
-
----
-
-## Methodology
-
-### 1. Data Preparation
-- Load raw data and run quality checks
-- Save a cleaned, versioned dataset
-
-### 2. Exploratory Data Analysis
-- Descriptive statistics
-- Trend charts and correlation scan
-
-### 3. Hypothesis Testing
-- Correlations and simple, explainable statistics
-- Plain-language interpretations with limitations
-
-### 4. Forecast Modeling
-- Per-country linear regression on Year
-- Time-aware split for evaluation
-- Forecast exports for 2025-2029
-
----
-
-## Results and Performance
-
-### Model Performance
-
-The forecasting model is intentionally simple and explainable. Performance metrics (MAE, RMSE) are reported in the modeling notebook and displayed in the Streamlit app. These values should be interpreted as short-term, trend-based accuracy rather than long-term climate projections.
-
-### Dashboard Outcomes
-
-- Stakeholders can filter by country and year
-- Key signals are summarized in KPIs
-- Associations are visualized without causal claims
-- Forecasts are clearly labeled as projections
-
----
-
-## Learning Journey and Reflections
-
-**Key Learnings:**
-- Transparent data quality checks are essential for trust
-- Correlation needs careful interpretation in climate context
-- Simple models are more explainable for public-facing insights
-- Streamlit enables rapid, stakeholder-friendly delivery
-
----
-
-## Version Control and Project Management
-
-All data outputs are versioned under `data/raw/v1` and `data/processed/v1` to ensure reproducibility and auditability.
-
----
-
-## Future Improvements
-
-- Add confidence intervals for forecasts
-- Expand coverage beyond 19 countries
-- Compare linear regression with more flexible time-series models
-- Add scenario-based forecasting using policy or emissions inputs
-- Include batch prediction or CSV upload in the dashboard
-
----
-
-## Credits
-
-**Dataset:** [Kaggle - Global Environmental Trends 2000-2024](https://www.kaggle.com/datasets/adilshamim8/temperature)
-
-**Author:** Sergio Kadje (Code Institute Data Analytics Capstone Project)
-
-**Institution:** Code Institute
-
-**Date:** February 2026
-
-**AI Assistance:** GitHub Copilot used for code suggestions and documentation improvements.
-
-- Python 3.12 or higher
-- pip (Python package manager)
-- Git (for cloning the repository)
-
-### Setup Instructions
+### Installation
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/sergionzeutcho-rgb/global_env_trend.git
+   git clone <your-repo-url>
    cd global_env_trend
    ```
 
@@ -359,125 +269,94 @@ All data outputs are versioned under `data/raw/v1` and `data/processed/v1` to en
    pip install -r requirements.txt
    ```
 
-### Running the Analysis
+5. **Verify installation:**
+   ```bash
+   streamlit --version
+   jupyter --version
+   ```
 
-The project contains four Jupyter notebooks in the `jupyter_notebooks/` folder, executed in sequence:
+## Running the Dashboard Locally
 
-1. **01_data_ingestion_quality_checks.ipynb**
-   - Loads raw data from `data/raw/v1/environmental_trends.csv`
-   - Validates data types, missing values, and duplicates
-   - Exports cleaned data to `data/processed/v1/environmental_trends_clean.csv`
-   - Run first to ensure data quality
+After installation, run the Streamlit app:
 
-2. **02_eda_descriptive_stats.ipynb**
-   - Performs exploratory analysis on the cleaned dataset
-   - Computes summary statistics by country and year
-   - Generates correlation heatmaps and trend visualizations
-   - Builds intuition about relationships between variables
-
-3. **03_hypothesis_testing.ipynb**
-   - Tests all four hypotheses using Pearson correlation
-   - Computes H1 (CO2–temperature), H2 (renewables–CO2), H3 (extreme events trend), H4 (forest–extreme events)
-   - Outputs correlation coefficients and interpretation
-   - Validates association claims with statistical caveats
-
-4. **04_predictive_modeling.ipynb**
-   - Builds per-country linear regression models
-   - Splits data at year 2018 (train 2000–2018, test 2019–2024)
-   - Calculates MAE and RMSE on test set
-   - Forecasts 2025–2029 temperatures and exports to `data/processed/v1/model_predictions.csv`
-
-**To run all notebooks:**
-
-From the repository root, use the Makefile or shell script (if available):
 ```bash
-bash setup.sh
+streamlit run app.py
 ```
 
-Or open Jupyter and execute notebooks in sequence:
-```bash
-jupyter notebook jupyter_notebooks/
-```
+The dashboard will open in your browser at `http://localhost:8501`.
 
-### Output Locations
+### Dashboard Navigation
 
-- **Cleaned data:** `data/processed/v1/environmental_trends_clean.csv`
-- **Model predictions:** `data/processed/v1/model_predictions.csv`
-- **Dashboard data source:** Use `environmental_trends_clean.csv` in Tableau
+Use the sidebar to switch between pages:
+- **Executive Summary** - High-level findings and recommendations
+- **Data Overview** - Dataset information and quality metrics
+- **Overview** - Key environmental trends
+- **Explore Patterns** - Correlation and relationship analysis
+- **Modeling & Prediction** - Temperature forecasting tool
+- **Analytics Hub** - Advanced analytics and anomaly detection
+- **Comparison Tool** - Country-to-country comparisons
+- **Scenario Builder** - What-if scenario modeling
 
-### Viewing the Dashboard
+### Filters
 
-The Tableau project is configured to use the processed dataset. To view or edit:
+All pages respect the sidebar filters:
+- **Countries:** Select one or more countries (default: All)
+- **Year range:** Adjust the time period to analyze
+- **Show technical notes:** Toggle detailed statistical information
 
-1. Open the Tableau workbook (available via Tableau Public link in this README once published)
-2. Or, download the `.twbx` file and open locally in Tableau Public/Desktop
-3. Use filters to explore trends by country and year range
+## Deployment
 
-### Reproducing the Analysis
+### Heroku
 
-To ensure reproducibility:
+* The App live link is: https://YOUR_APP_NAME.herokuapp.com/
+* The project was deployed to Heroku using the following steps.
 
-1. Start with `data/raw/v1/environmental_trends.csv` (original Kaggle source)
-2. Run notebooks 01–04 in sequence
-3. Verify output files are generated in `data/processed/v1/`
-4. Compare results with provided outputs (hypothesis correlations and model metrics)
+1. Log in to Heroku and create an App
+2. At the Deploy tab, select GitHub as the deployment method.
+3. Select your repository name and click Search. Once it is found, click Connect.
+4. Select the branch you want to deploy, then click Deploy Branch.
+5. The deployment process should happen smoothly in case all deployment files are fully functional. Click now the button Open App on the top of the page to access your App.
+6. If the slug size is too large then add large or unnecessary files to .slugignore.
 
-If results differ, check for:
-- Different Python or package versions (see [requirements.txt](requirements.txt))
-- Floating-point precision (expected ±0.0001 tolerance)
-- Dataset updates (regenerate if new data is added to raw folder)
+## Main Data Analysis and Libraries
 
-### Implementation
+### Core Production Libraries
 
-- Ingest data and store raw versioned files
-- Clean and validate data, export processed datasets
-- Run EDA and hypothesis checks
-- Build a simple forecasting model
-- Export predictions and build the BI dashboard
+* **NumPy** (version 1.26.1) - Used for numerical computations and array operations in data processing and model calculations
+* **Pandas** (version 2.1.1) - Used for data manipulation, cleaning, aggregation, and transformation throughout all jupyter notebooks and the dashboard
+* **Matplotlib** (version 3.8.0) - Used to create static visualizations including line plots, scatter plots, and bar charts in the analysis notebooks
+* **Seaborn** (version 0.13.2) - Used to display correlation heatmaps and enhanced statistical plots with improved aesthetics
+* **Plotly** (version 5.17.0) - Used to display interactive visualizations in the Streamlit dashboard including line charts, scatter plots, and bar charts with hover tooltips
+* **Streamlit** (version 1.40.2) - Used as the dashboard framework to create an interactive web application for stakeholder exploration
+* **feature-engine** (version 1.6.1) - Used for feature engineering tasks in the ML pipeline such as handling missing values and feature transformations
+* **imbalanced-learn** (version 0.11.0) - Used for handling class imbalance in predictive modeling if needed
+* **scikit-learn** (version 1.3.1) - Used for machine learning model development including LinearRegression, train-test splitting, and performance metrics (MAE, RMSE, R²)
+* **XGBoost** (version 1.7.6) - Alternative gradient boosting library available for more complex modeling approaches if needed
 
-### Updates
+### Development Libraries (used in notebooks only)
 
-- Add new-year data to data/raw/v2
-- Rerun notebooks and export data/processed/v2
-- Version the dashboard extract and record changes
+* **ydata-profiling** (version 4.12.0) - Used to generate comprehensive exploratory data analysis (EDA) reports in the jupyter notebooks
+* **ppscore** (version 1.1.0) - Used in jupyter notebooks to calculate Predictive Power Score and understand better how features and target interact with each other
+* **Yellowbrick** (version 1.5) - Used for machine learning visualization including model performance diagnostics and feature importance plots
+* **Pillow** (version 10.0.1) - Used for image processing and display in the dashboard if needed
 
-### Maintenance and Updates
+## Credits
 
-- Add new-year data to data/raw/v2
-- Rerun notebooks and export data/processed/v2
-- Refresh dashboard extracts
+* **Dataset:** This project uses the Global Environmental Trends 2000-2024 dataset from [Kaggle](https://www.kaggle.com/datasets/adilshamim8/temperature), originally compiled by Adil Shamim. The dataset provides environmental indicators including temperature, emissions, renewable energy, extreme weather events, and forest coverage for 19 countries over a 25-year period.
 
-### Evaluation
+* **Code Institute:** Project structure and methodology guidance from the Code Institute Data Analytics program. The project follows the assessment criteria and best practices taught in the capstone project module.
 
-- Usability checks with 2 to 3 users
-- Record feedback and iterate on labels, layout, and narrative
-- Monitor model drift and schedule periodic retraining
+* **Streamlit Documentation:** Used Streamlit's official documentation and examples for building the interactive dashboard with multiple pages and dynamic visualizations.
 
-## Challenges and Reflection (LO3.2)
+* **Scikit-learn Documentation:** Referenced for implementing machine learning models, evaluation metrics, and best practices for train-test splitting and model validation.
 
-- Limited time coverage (2000-2024)
-- Possible gaps in country coverage and data completeness
-- Missing contextual variables (GDP, policy changes, energy mix)
-- Modelling limitations due to short time series per country
+* **Plotly Documentation:** Used for creating interactive visualizations with professional styling and user-friendly tooltips.
 
-## UX, Accessibility, and Dashboard Standards
+* **GitHub Copilot:** AI assistance was used for code suggestions, documentation improvements, and debugging during development.
 
-- Information hierarchy: titles, filters, and KPIs are placed to guide attention from summary to detail
-- Consistency: a single color palette for emissions, renewables, and temperature across all charts
-- Accessibility: colorblind-friendly palette, high-contrast labels, and avoid red-green only cues
-- User control: filters (country, year range) with reset buttons and clear tooltips
+## Acknowledgements
 
-## How AI Was Used
-
-- Ideation and design thinking
-- Drafting business requirements and hypotheses
-- Structuring the README and dashboard narrative
-
-## Dashboard Link
-
-- Tableau Public: (to be added after publishing)
-
-## Credits and References
-
-- Code Institute Data Analytics capstone template
-- Kaggle dataset: Global Environmental Trends 2000-2024
+* I would like to thank Code Institute for providing the educational framework and assessment structure for this capstone project.
+* Special thanks to my mentor for guidance and feedback throughout the project development.
+* Thanks to the Kaggle community and Adil Shamim for making the Global Environmental Trends dataset publicly available.
+* Thanks to the open-source community for developing and maintaining the excellent Python libraries used in this project.

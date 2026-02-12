@@ -124,8 +124,9 @@ def get_status_color(metric_name: str, value: float, direction: str) -> str:
     return "⚪"
 
 
+@st.cache_data(show_spinner=False)
 def calculate_correlation_matrix(df: pd.DataFrame) -> pd.DataFrame:
-    """Calculate correlation between key metrics"""
+    """Calculate correlation between key metrics (cached for better performance)"""
     metrics = [
         "Avg_Temperature_degC", "CO2_Emissions_tons_per_capita", "Sea_Level_Rise_mm",
         "Rainfall_mm", "Renewable_Energy_pct", "Extreme_Weather_Events", "Forest_Area_pct"
@@ -168,8 +169,20 @@ st.markdown(
     "interpretable baseline model to support discussion and planning."
 )
 
-clean_df = load_clean_data()
-pred_df = load_predictions()
+# Load data with error handling
+try:
+    with st.spinner("Loading environmental data..."):
+        clean_df = load_clean_data()
+        pred_df = load_predictions()
+except FileNotFoundError:
+    st.error("⚠️ **Data file not found!** Please run the data cleaning notebook first.")
+    st.info("📝 **How to fix:**")
+    st.code("jupyter notebook jupyter_notebooks/01_data_ingestion_quality_checks.ipynb", language="bash")
+    st.stop()
+except Exception as e:
+    st.error(f"⚠️ **Error loading data:** {str(e)}")
+    st.info("💡 Please check that the data files exist in `data/processed/v1/` directory")
+    st.stop()
 
 st.sidebar.title("📋 Navigation")
 page = st.sidebar.radio(
@@ -202,18 +215,48 @@ st.session_state.current_page = page.replace("📝 ", "").replace("📊 ", "").r
 st.sidebar.markdown("---")
 
 st.sidebar.header("Filters")
+
+# Reset filters button
+if st.sidebar.button("🔄 Reset All Filters", help="Reset all filters to default settings"):
+    st.session_state.selected_countries = sorted(clean_df["Country"].unique().tolist())
+    st.session_state.year_slider = (int(clean_df["Year"].min()), int(clean_df["Year"].max()))
+    st.rerun()
+
 all_countries = sorted(clean_df["Country"].unique().tolist())
 country_options = ["All"] + all_countries
+
+# Countries filter with tooltip
 selected_countries = st.sidebar.multiselect(
     "Countries",
     country_options,
     default=["All"],
+    help="Select one or more countries to analyze. 'All' includes every country in the dataset."
 )
 if not selected_countries or "All" in selected_countries:
     selected_countries = all_countries
+
 min_year, max_year = int(clean_df["Year"].min()), int(clean_df["Year"].max())
-year_range = st.sidebar.slider("Year range", min_year, max_year, (min_year, max_year))
-show_technical = st.sidebar.checkbox("Show technical notes", value=False)
+
+# Initialize session state for year slider if not exists
+if "year_slider" not in st.session_state:
+    st.session_state.year_slider = (min_year, max_year)
+
+# Year slider with tooltip
+year_range = st.sidebar.slider(
+    "Year range", 
+    min_year, 
+    max_year, 
+    key="year_slider",
+    help="Filter data by time period"
+)
+
+# Technical notes toggle with tooltip
+show_technical = st.sidebar.checkbox(
+    "Show technical notes", 
+    value=False,
+    help="Toggle detailed statistical information and model metrics"
+)
+
 if show_technical:
     st.sidebar.markdown(
         "<span style='color:#1f77b4;font-weight:bold;'>Technical notes enabled</span> <span style='font-size: 0.85em;'>(shows on Overview, Explore Patterns, Modeling & Prediction)</span>",
@@ -221,15 +264,26 @@ if show_technical:
     )
 
 with st.sidebar.expander("Recommendation thresholds", expanded=False):
-    temp_threshold = st.number_input("Temp change (degC)", value=0.5, min_value=0.0, step=0.1)
+    st.caption("Adjust thresholds for automatic recommendations")
+    temp_threshold = st.number_input(
+        "Temp change (degC)", 
+        value=0.5, min_value=0.0, step=0.1,
+        help="Threshold for significant temperature change"
+    )
     co2_threshold = st.number_input(
-        "CO2 change (tons per capita)", value=0.5, min_value=0.0, step=0.1
+        "CO2 change (tons per capita)", 
+        value=0.5, min_value=0.0, step=0.1,
+        help="Threshold for significant CO2 emissions change"
     )
     renew_threshold = st.number_input(
-        "Renewables change (%)", value=2.0, min_value=0.0, step=0.5
+        "Renewables change (%)", 
+        value=2.0, min_value=0.0, step=0.5,
+        help="Threshold for significant renewable energy change"
     )
     events_threshold = st.number_input(
-        "Extreme events change", value=5.0, min_value=0.0, step=1.0
+        "Extreme events change", 
+        value=5.0, min_value=0.0, step=1.0,
+        help="Threshold for significant change in extreme weather events"
     )
 
 filtered_df = filter_data(clean_df, selected_countries, year_range)
@@ -239,10 +293,17 @@ st.sidebar.download_button(
     filtered_df.to_csv(index=False).encode("utf-8"),
     file_name="environmental_trends_filtered.csv",
     mime="text/csv",
+    help="Download the currently filtered dataset as CSV"
 )
 
 if filtered_df.empty:
-    st.warning("No data for the selected filters.")
+    st.warning("⚠️ **No data matches your current filters**")
+    st.info("💡 **Suggestions:**")
+    st.markdown("""
+    - Try expanding the year range
+    - Select more countries
+    - Click **Reset All Filters** above to start over
+    """)
     st.stop()
 
 st.markdown("### Quick guide")
@@ -1188,22 +1249,52 @@ elif st.session_state.current_page == "Scenario Builder":
     
     col1, col2 = st.columns(2)
     with col1:
-        scenario_name = st.text_input("Scenario name", "My Environmental Scenario")
+        scenario_name = st.text_input(
+            "Scenario name", 
+            "My Environmental Scenario",
+            help="Give your scenario a descriptive name"
+        )
     with col2:
-        scenario_year = st.number_input("Target year", value=2030, min_value=2025, max_value=2050)
+        scenario_year = st.number_input(
+            "Target year", 
+            value=2030, 
+            min_value=2025, 
+            max_value=2050,
+            help="Select a future year for prediction (2025-2050)"
+        )
     
     st.markdown("**Adjust these factors from current levels:**")
     
     col1, col2, col3 = st.columns(3)
     with col1:
         co2_reduction = st.slider("CO₂ reduction (%)", -50, 50, 0, help="% change from current level")
-        renew_increase = st.slider("Renewable energy increase (%)", -20, 50, 0)
+        renew_increase = st.slider(
+            "Renewable energy increase (%)", 
+            -20, 50, 0,
+            help="Change in renewable energy share"
+        )
     with col2:
-        forest_increase = st.slider("Forest area increase (%)", -20, 30, 0)
-        extreme_change = st.slider("Extreme events change (%)", -50, 100, 0)
+        forest_increase = st.slider(
+            "Forest area increase (%)", 
+            -20, 30, 0,
+            help="Change in forest coverage percentage"
+        )
+        extreme_change = st.slider(
+            "Extreme events change (%)", 
+            -50, 100, 0,
+            help="Projected change in frequency of extreme weather events"
+        )
     with col3:
-        rainfall_change = st.slider("Rainfall change (mm)", -200, 200, 0)
-        pop_growth = st.slider("Population growth (%)", -10, 50, 0)
+        rainfall_change = st.slider(
+            "Rainfall change (mm)", 
+            -200, 200, 0,
+            help="Change in annual rainfall amount"
+        )
+        pop_growth = st.slider(
+            "Population growth (%)", 
+            -10, 50, 0,
+            help="Projected population growth rate"
+        )
     
     if st.button("🚀 Run Scenario"):
         # Get current baseline

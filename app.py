@@ -18,13 +18,17 @@ st.set_page_config(page_title="Global Environmental Trends", layout="wide")
 
 @st.cache_data(show_spinner=False)
 def load_clean_data() -> pd.DataFrame:
-    return pd.read_csv(CLEAN_PATH)
+    df = pd.read_csv(CLEAN_PATH)
+    df["Year"] = df["Year"].astype(int)
+    return df
 
 
 @st.cache_data(show_spinner=False)
 def load_predictions() -> pd.DataFrame:
     if PRED_PATH.exists():
-        return pd.read_csv(PRED_PATH)
+        df = pd.read_csv(PRED_PATH)
+        df["Year"] = df["Year"].astype(int)
+        return df
     return pd.DataFrame(columns=["Year", "Country", "Predicted_Avg_Temperature_degC"])
 
 
@@ -537,7 +541,9 @@ elif st.session_state.current_page == "Data Overview":
 
     st.subheader("Sample data")
     st.markdown("**First 10 records from the dataset:**")
-    st.dataframe(clean_df.head(10), use_container_width=True, hide_index=True)
+    display_df = clean_df.head(10).copy()
+    display_df["Year"] = display_df["Year"].astype(int)
+    st.dataframe(display_df, use_container_width=True, hide_index=True)
 
 elif st.session_state.current_page == "Overview":
     st.subheader("Key signals")
@@ -765,6 +771,7 @@ elif st.session_state.current_page == "Modeling & Prediction":
     st.subheader("📋 Test Results")
     st.markdown("**Actual vs. Predicted temperatures on test data:**")
     results_df = test_df[["Year", "Country", "Avg_Temperature_degC"]].copy()
+    results_df["Year"] = results_df["Year"].astype(int)
     results_df["Predicted_Avg_Temperature_degC"] = y_pred
     results_df["Error (°C)"] = (results_df["Avg_Temperature_degC"] - results_df["Predicted_Avg_Temperature_degC"]).round(3)
     st.dataframe(results_df, use_container_width=True, hide_index=True)

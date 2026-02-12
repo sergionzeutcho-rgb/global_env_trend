@@ -1,42 +1,21 @@
-# Global Environmental Trends (2000-2024)
+# Global Environmental Trends (2000–2024)
 
-![CI logo](https://codeinstitute.s3.amazonaws.com/fullstack/ci_logo_small.png)
-
-**Live Dashboard:** Not deployed yet
-
-## Project Overview
-
-This project analyzes global environmental indicators to communicate trends and risks in a stakeholder-friendly way. It combines data quality checks, exploratory analysis, hypothesis testing, and a simple forecasting model, plus a Streamlit dashboard for interactive exploration.
-
-**Dataset:** [Global Environmental Trends 2000-2024](https://www.kaggle.com/datasets/adilshamim8/temperature) (19 countries, 2000-2024)
-
-**Key Features:**
-- Data quality checks and versioned outputs
-- Exploratory analysis with trends and correlations
-- Hypothesis testing with clear, non-causal interpretations
-- Simple, explainable forecasting (per-country linear regression)
-- Streamlit dashboard with filters and a prediction tool
-- Stakeholder-focused commentary and limitations
+Interactive analytics dashboard and reproducible notebooks for climate signals, risk indicators, and explainable forecasting.
+Stakeholder-focused, transparent, and fully documented for Code Institute Data Analytics capstone.
 
 ---
 
-## Table of Contents
+## Assessment Alignment Checklist
 
-1. [Business Requirements](#business-requirements)
-2. [Project Objectives](#project-objectives)
-3. [Project Hypotheses](#project-hypotheses)
-4. [Dataset Description](#dataset-description)
-5. [Project Structure](#project-structure)
-6. [Key Findings](#key-findings)
-7. [Installation and Setup](#installation-and-setup)
-8. [Usage](#usage)
-9. [Technologies Used](#technologies-used)
-10. [Methodology](#methodology)
-11. [Results and Performance](#results-and-performance)
-12. [Learning Journey and Reflections](#learning-journey-and-reflections)
-13. [Version Control and Project Management](#version-control-and-project-management)
-14. [Future Improvements](#future-improvements)
-15. [Credits](#credits)
+- **LO1.1 Ethics, privacy, governance:** Documented in README and dashboard notes; transparent modeling, versioned outputs, and clear limitations.
+- **LO1.2 Legal and social implications:** Licensing, GDPR principles, and responsible use are covered in README.
+- **LO2.1 Insight communication:** Narrative captions, plain-language summaries, and stakeholder-focused commentary in dashboard and notebooks.
+- **LO2.2 Visualisation and narratives:** Minimum four plot types, guided dashboard flow, and accessible color palette.
+- **LO2.3 Documentation:** README sections, notebook structure, and code comments align with analysis stages.
+- **LO3.1 Project plan:** Implementation, maintenance, updates, and evaluation included in README and project structure.
+- **LO3.2 Reflection:** Challenges, limitations, and learning journey recorded in README and notebook markdown.
+
+All checklist items are addressed and stipulated in the README, notebooks, and dashboard.
 
 ---
 
@@ -350,7 +329,6 @@ All data outputs are versioned under `data/raw/v1` and `data/processed/v1` to en
 
 - Python 3.12 or higher
 - pip (Python package manager)
-- Tableau Public (optional, for dashboard viewing/editing)
 - Git (for cloning the repository)
 
 ### Setup Instructions
@@ -488,16 +466,6 @@ If results differ, check for:
 - Consistency: a single color palette for emissions, renewables, and temperature across all charts
 - Accessibility: colorblind-friendly palette, high-contrast labels, and avoid red-green only cues
 - User control: filters (country, year range) with reset buttons and clear tooltips
-
-## Assessment Alignment Checklist
-
-- LO1.1 Ethics, privacy, governance: documented in the ethics section and dashboard notes
-- LO1.2 Legal and social implications: licensing and GDPR principles documented
-- LO2.1 Insight communication: narrative captions and plain-language summaries in dashboard
-- LO2.2 Visualisation and narratives: minimum four plot types plus guided dashboard flow
-- LO2.3 Documentation: README sections and notebook structure align with analysis stages
-- LO3.1 Project plan: implementation, maintenance, updates, evaluation included
-- LO3.2 Reflection: challenges and limitations recorded
 
 ## How AI Was Used
 

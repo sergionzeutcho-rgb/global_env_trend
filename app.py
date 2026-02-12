@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+from datetime import datetime
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import streamlit as st
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
@@ -85,6 +87,81 @@ def align_features(row_df: pd.DataFrame, feature_columns: list[str]) -> pd.DataF
     return row_df[feature_columns]
 
 
+# Helper functions for enhancements
+def get_country_emoji(country: str) -> str:
+    """Map country to flag emoji"""
+    flags = {
+        "United States": "🇺🇸", "China": "🇨🇳", "Germany": "🇩🇪", "Brazil": "🇧🇷",
+        "Australia": "🇦🇺", "India": "🇮🇳", "Nigeria": "🇳🇬", "Russia": "🇷🇺",
+        "Japan": "🇯🇵", "Canada": "🇨🇦", "Mexico": "🇲🇽", "United Kingdom": "🇬🇧",
+        "France": "🇫🇷", "Italy": "🇮🇹", "Spain": "🇪🇸", "South Korea": "🇰🇷",
+        "Indonesia": "🇮🇩", "Thailand": "🇹🇭", "Vietnam": "🇻🇳", "Philippines": "🇵🇭",
+        "Egypt": "🇪🇬", "South Africa": "🇿🇦", "Kenya": "🇰🇪"
+    }
+    return flags.get(country, "🌍")
+
+
+def get_trend_indicator(delta: float) -> str:
+    """Return trend emoji based on value change"""
+    if delta > 0.5:
+        return "📈 Rapidly increasing"
+    elif delta > 0:
+        return "📊 Increasing"
+    elif delta > -0.5:
+        return "📉 Decreasing"
+    else:
+        return "📉 Rapidly decreasing"
+
+
+def get_status_color(metric_name: str, value: float, direction: str) -> str:
+    """Get status indicator based on metric"""
+    if metric_name == "CO2_Emissions_tons_per_capita":
+        return "🔴" if value > 15 else "🟡" if value > 8 else "🟢"
+    elif metric_name == "Renewable_Energy_pct":
+        return "🟢" if value > 30 else "🟡" if value > 15 else "🔴"
+    elif metric_name == "Avg_Temperature_degC":
+        return "🔴" if value > 20 else "🟡" if value > 15 else "🟢"
+    return "⚪"
+
+
+def calculate_correlation_matrix(df: pd.DataFrame) -> pd.DataFrame:
+    """Calculate correlation between key metrics"""
+    metrics = [
+        "Avg_Temperature_degC", "CO2_Emissions_tons_per_capita", "Sea_Level_Rise_mm",
+        "Rainfall_mm", "Renewable_Energy_pct", "Extreme_Weather_Events", "Forest_Area_pct"
+    ]
+    available_metrics = [m for m in metrics if m in df.columns]
+    return df[available_metrics].corr()
+
+
+def detect_anomalies(df: pd.DataFrame, column: str, threshold: float = 2.5) -> pd.DataFrame:
+    """Detect anomalies using z-score method"""
+    df_copy = df.copy()
+    if column not in df_copy.columns:
+        return df_copy
+    
+    # Calculate z-scores per country
+    df_copy["z_score"] = df_copy.groupby("Country")[column].transform(lambda x: np.abs((x - x.mean()) / (x.std() + 1e-8)))
+    df_copy["is_anomaly"] = df_copy["z_score"] > threshold
+    return df_copy
+
+
+def export_csv(dataframe: pd.DataFrame, filename: str) -> bytes:
+    """Convert dataframe to CSV bytes for download"""
+    return dataframe.to_csv(index=False).encode('utf-8')
+
+
+def get_data_quality_score(df: pd.DataFrame) -> float:
+    """Calculate overall data quality score (0-100)"""
+    total_cells = df.shape[0] * df.shape[1]
+    missing_cells = df.isnull().sum().sum()
+    duplicates = df.duplicated().sum()
+    
+    completeness = (1 - missing_cells / total_cells) * 60
+    uniqueness = (1 - duplicates / max(df.shape[0], 1)) * 40
+    return min(100, completeness + uniqueness)
+
+
 st.title("Global Environmental Trends (2000-2024)")
 st.markdown(
     "This dashboard summarizes climate-related signals from 2000-2024 and provides an "
@@ -103,6 +180,9 @@ page = st.sidebar.radio(
         "📈 Overview",
         "🔍 Explore Patterns",
         "🤖 Modeling & Prediction",
+        "📊 Analytics Hub",
+        "🔄 Comparison Tool",
+        "⚙️ Scenario Builder",
     ],
     index=[
         "Executive Summary",
@@ -110,11 +190,14 @@ page = st.sidebar.radio(
         "Overview",
         "Explore Patterns",
         "Modeling & Prediction",
+        "Analytics Hub",
+        "Comparison Tool",
+        "Scenario Builder",
     ].index(st.session_state.current_page if "current_page" in st.session_state else "Executive Summary"),
 )
 st.session_state.current_page = page.replace("📝 ", "").replace("📊 ", "").replace("📈 ", "").replace(
     "🔍 ", ""
-).replace("🤖 ", "")
+).replace("🤖 ", "").replace("🔄 ", "").replace("⚙️ ", "")
 
 st.sidebar.markdown("---")
 
@@ -131,6 +214,11 @@ if not selected_countries or "All" in selected_countries:
 min_year, max_year = int(clean_df["Year"].min()), int(clean_df["Year"].max())
 year_range = st.sidebar.slider("Year range", min_year, max_year, (min_year, max_year))
 show_technical = st.sidebar.checkbox("Show technical notes", value=False)
+if show_technical:
+    st.sidebar.markdown(
+        "<span style='color:#1f77b4;font-weight:bold;'>Technical notes enabled</span> <span style='font-size: 0.85em;'>(shows on Overview, Explore Patterns, Modeling & Prediction)</span>",
+        unsafe_allow_html=True
+    )
 
 with st.sidebar.expander("Recommendation thresholds", expanded=False):
     temp_threshold = st.number_input("Temp change (degC)", value=0.5, min_value=0.0, step=0.1)
@@ -434,7 +522,7 @@ if st.session_state.current_page == "Executive Summary":
             rec_rows.append(
                 {
                     "Status": status,
-                    "Country": row["Country"],
+                    "Country": f"{get_country_emoji(row['Country'])} {row['Country']}",
                     "Key Findings": "; ".join(country_recs),
                 }
             )
@@ -543,7 +631,55 @@ elif st.session_state.current_page == "Data Overview":
     st.markdown("**First 10 records from the dataset:**")
     display_df = clean_df.head(10).copy()
     display_df["Year"] = display_df["Year"].astype(int)
+    display_df["Country"] = display_df["Country"].apply(lambda x: f"{get_country_emoji(x)} {x}")
     st.dataframe(display_df, use_container_width=True, hide_index=True)
+    
+    st.markdown("---")
+    st.subheader("📥 Download Options")
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.download_button(
+            "📥 Full Dataset (CSV)",
+            export_csv(clean_df),
+            "environmental_trends_full.csv",
+            "text/csv"
+        )
+    with col2:
+        st.download_button(
+            "📋 Data Glossary (CSV)",
+            export_csv(pd.DataFrame({
+                "Metric": ["Year", "Country", "Avg_Temperature_degC", "CO2_Emissions_tons_per_capita",
+                          "Sea_Level_Rise_mm", "Rainfall_mm", "Population", "Renewable_Energy_pct",
+                          "Extreme_Weather_Events", "Forest_Area_pct"],
+                "Definition": [
+                    "Year of observation",
+                    "Country name",
+                    "Average temperature in Celsius",
+                    "Per-capita CO2 emissions in tons",
+                    "Sea level rise in millimeters",
+                    "Annual rainfall in millimeters",
+                    "Total population",
+                    "Renewable energy share (%)",
+                    "Count of extreme weather events",
+                    "Forest area percentage"
+                ]
+            })),
+            "data_glossary.csv",
+            "text/csv"
+        )
+    with col3:
+        st.download_button(
+            "📊 Quality Report (CSV)",
+            export_csv(pd.DataFrame({
+                "Metric": ["Total Records", "Countries", "Year Range", "Complete Records", "Missing Values"],
+                "Value": [len(clean_df), clean_df["Country"].nunique(), 
+                         f"{clean_df['Year'].min()}-{clean_df['Year'].max()}",
+                         f"{(1 - clean_df.isnull().sum().sum() / (clean_df.shape[0] * clean_df.shape[1]))*100:.2f}%",
+                         clean_df.isnull().sum().sum()]
+            })),
+            "quality_report.csv",
+            "text/csv"
+        )
 
 elif st.session_state.current_page == "Overview":
     st.subheader("Key signals")
@@ -903,3 +1039,226 @@ elif st.session_state.current_page == "Modeling & Prediction":
             "**What does this mean?** This temperature is what the model expects based on the inputs you provided and historical patterns. "
             "Use this to compare different scenarios and understand which factors have the biggest influence on temperature."
         )
+
+elif st.session_state.current_page == "Analytics Hub":
+    st.subheader("📊 Advanced Analytics Hub")
+    st.write(
+        "🔬 **Purpose:** Dive deep into data relationships, quality metrics, and advanced analysis. "
+        "Use these tools to understand patterns and anomalies."
+    )
+    
+    # Data Quality Dashboard
+    st.markdown("---")
+    st.subheader("📈 Data Quality Dashboard")
+    
+    quality_score = get_data_quality_score(clean_df)
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Overall Quality Score", f"{quality_score:.1f}/100 ⭐")
+    with col2:
+        missing_pct = (clean_df.isnull().sum().sum() / (clean_df.shape[0] * clean_df.shape[1])) * 100
+        st.metric("Data Completeness", f"{100 - missing_pct:.2f}%")
+    with col3:
+        duplicates = clean_df.duplicated().sum()
+        st.metric("Unique Records", f"{(1 - duplicates/len(clean_df))*100:.2f}%")
+    
+    st.info(f"✅ **Data last updated:** {datetime.now().strftime('%B %d, %Y at %I:%M %p')}")
+    
+    # Correlation Heatmap
+    st.markdown("---")
+    st.subheader("🔗 Metric Correlations")
+    st.markdown("**What to look for:** Values closer to 1.0 or -1.0 show strong relationships. Values near 0 show no relationship.")
+    
+    corr_matrix = calculate_correlation_matrix(filtered_df)
+    corr_fig = go.Figure(data=go.Heatmap(
+        z=corr_matrix.values,
+        x=corr_matrix.columns,
+        y=corr_matrix.columns,
+        colorscale='RdBu',
+        zmid=0,
+        text=np.round(corr_matrix.values, 2),
+        texttemplate='%{text}',
+        textfont={"size": 10},
+    ))
+    corr_fig.update_layout(height=500, showlegend=False)
+    st.plotly_chart(corr_fig, use_container_width=True)
+    
+    # Anomaly Detection
+    st.markdown("---")
+    st.subheader("🚨 Anomaly Detection")
+    st.markdown("**What this shows:** Data points that are unusually high or low compared to their country's typical values.")
+    
+    anomaly_col = st.selectbox("Select metric to check for anomalies", 
+                              ["Avg_Temperature_degC", "CO2_Emissions_tons_per_capita", "Extreme_Weather_Events"])
+    
+    anomaly_df = detect_anomalies(filtered_df, anomaly_col, threshold=2.0)
+    anomalies = anomaly_df[anomaly_df["is_anomaly"]][["Year", "Country", anomaly_col]].sort_values(anomaly_col, ascending=False)
+    
+    if len(anomalies) > 0:
+        st.warning(f"🚨 Found {len(anomalies)} anomalies")
+        anomalies_display = anomalies.head(10).copy()
+        anomalies_display["Country"] = anomalies_display["Country"].apply(lambda x: f"{get_country_emoji(x)} {x}")
+        st.dataframe(anomalies_display, use_container_width=True, hide_index=True)
+    else:
+        st.success(f"✅ No anomalies detected in {anomaly_col}")
+    
+    # Download Analysis
+    st.markdown("---")
+    st.subheader("💾 Downloads")
+    st.download_button(
+        "📥 Download Quality Report",
+        export_csv(anomaly_df, "data_anomalies.csv"),
+        "data_anomalies.csv",
+        "text/csv"
+    )
+
+elif st.session_state.current_page == "Comparison Tool":
+    st.subheader("🔄 Country Comparison Tool")
+    st.write(
+        "📊 **Purpose:** Compare environmental metrics side-by-side across countries. "
+        "Identify leaders and laggards in climate action."
+    )
+    
+    comparison_countries = st.multiselect(
+        "Select countries to compare (choose 2-5)",
+        all_countries,
+        default=all_countries[:3],
+        max_selections=5
+    )
+    
+    if len(comparison_countries) < 2:
+        st.warning("Please select at least 2 countries to compare.")
+    else:
+        comparison_df = filtered_df[filtered_df["Country"].isin(comparison_countries)].copy()
+        
+        # Latest values comparison
+        st.subheader("📊 Latest Year Comparison")
+        latest_year = comparison_df["Year"].max()
+        latest_data = comparison_df[comparison_df["Year"] == latest_year].sort_values("Country")
+        
+        metrics_to_compare = ["Avg_Temperature_degC", "CO2_Emissions_tons_per_capita", "Renewable_Energy_pct", "Extreme_Weather_Events"]
+        
+        for metric in metrics_to_compare:
+            fig = px.bar(
+                latest_data,
+                x="Country",
+                y=metric,
+                title=f"{metric.replace('_', ' ')} in {latest_year}",
+                color="Country",
+                text_auto='.2f'
+            )
+            st.plotly_chart(fig, use_container_width=True)
+        
+        # Trends comparison
+        st.subheader("📈 Trends Over Time")
+        metric_choice = st.selectbox("Select metric to track", metrics_to_compare)
+        
+        trend_fig = px.line(
+            comparison_df,
+            x="Year",
+            y=metric_choice,
+            color="Country",
+            markers=True,
+            title=f"{metric_choice} Trends"
+        )
+        st.plotly_chart(trend_fig, use_container_width=True)
+        
+        # Download comparison
+        st.download_button(
+            "📥 Download Comparison Data",
+            export_csv(latest_data, "country_comparison.csv"),
+            "country_comparison.csv",
+            "text/csv"
+        )
+
+elif st.session_state.current_page == "Scenario Builder":
+    st.subheader("⚙️ Scenario Builder")
+    st.write(
+        "🎯 **Purpose:** Create 'what-if' scenarios to model the impact of different policies or transitions. "
+        "See how temperature might change with different interventions."
+    )
+    
+    st.markdown("---")
+    st.subheader("📋 Create Your Scenario")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        scenario_name = st.text_input("Scenario name", "My Environmental Scenario")
+    with col2:
+        scenario_year = st.number_input("Target year", value=2030, min_value=2025, max_value=2050)
+    
+    st.markdown("**Adjust these factors from current levels:**")
+    
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        co2_reduction = st.slider("CO₂ reduction (%)", -50, 50, 0, help="% change from current level")
+        renew_increase = st.slider("Renewable energy increase (%)", -20, 50, 0)
+    with col2:
+        forest_increase = st.slider("Forest area increase (%)", -20, 30, 0)
+        extreme_change = st.slider("Extreme events change (%)", -50, 100, 0)
+    with col3:
+        rainfall_change = st.slider("Rainfall change (mm)", -200, 200, 0)
+        pop_growth = st.slider("Population growth (%)", -10, 50, 0)
+    
+    if st.button("🚀 Run Scenario"):
+        # Get current baseline
+        baseline = filtered_df[filtered_df["Year"] == filtered_df["Year"].max()].mean(numeric_only=True)
+        
+        # Calculate scenario values
+        scenario_data = {
+            "Year": scenario_year,
+            "CO2_Emissions_tons_per_capita": baseline["CO2_Emissions_tons_per_capita"] * (1 + co2_reduction/100),
+            "Renewable_Energy_pct": min(100, baseline["Renewable_Energy_pct"] * (1 + renew_increase/100)),
+            "Forest_Area_pct": min(100, baseline["Forest_Area_pct"] * (1 + forest_increase/100)),
+            "Extreme_Weather_Events": max(0, baseline["Extreme_Weather_Events"] * (1 + extreme_change/100)),
+            "Rainfall_mm": max(0, baseline["Rainfall_mm"] + rainfall_change),
+            "Population": baseline["Population"] * (1 + pop_growth/100),
+            "Sea_Level_Rise_mm": baseline["Sea_Level_Rise_mm"],
+        }
+        
+        # Predict temperature for scenario
+        scenario_df = pd.DataFrame([scenario_data])
+        scenario_df["Country"] = selected_countries[0] if selected_countries else "Global"
+        
+        scenario_X, _ = build_features(scenario_df, include_target=False)
+        scenario_X = align_features(scenario_X, full_X.columns.tolist())
+        pred_temp = full_model.predict(scenario_X)[0]
+        
+        # Baseline prediction
+        baseline_data = filtered_df[filtered_df["Year"] == filtered_df["Year"].max()].iloc[0].to_dict()
+        baseline_X, _ = build_features(pd.DataFrame([baseline_data]), include_target=False)
+        baseline_X = align_features(baseline_X, full_X.columns.tolist())
+        baseline_temp = full_model.predict(baseline_X)[0]
+        
+        temp_diff = pred_temp - baseline_temp
+        
+        # Display results
+        st.markdown("---")
+        st.subheader("📊 Scenario Results")
+        
+        results_col1, results_col2, results_col3 = st.columns(3)
+        with results_col1:
+            st.metric("Scenario Name", scenario_name)
+        with results_col2:
+            st.metric("Target Year", int(scenario_year))
+        with results_col3:
+            st.metric("Temperature Change", f"{temp_diff:+.2f}°C")
+        
+        st.info(
+            f"**{scenario_name} ({int(scenario_year)})**\n\n"
+            f"📍 Baseline temperature: {baseline_temp:.2f}°C\n"
+            f"🎯 Scenario temperature: {pred_temp:.2f}°C\n"
+            f"📈 Difference: {temp_diff:+.2f}°C\n\n"
+            f"**What this means:** With your proposed changes, "
+            f"{'temperature would rise' if temp_diff > 0 else 'temperature would drop'} by {abs(temp_diff):.2f}°C compared to current trends."
+        )
+        
+        # Comparison visualization
+        comparison_data = pd.DataFrame({
+            "Scenario": ["Current Baseline", scenario_name],
+            "Temperature (°C)": [baseline_temp, pred_temp]
+        })
+        
+        fig = px.bar(comparison_data, x="Scenario", y="Temperature (°C)", color="Scenario", text_auto='.2f')
+        st.plotly_chart(fig, use_container_width=True)
+

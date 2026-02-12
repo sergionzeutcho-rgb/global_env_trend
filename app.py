@@ -146,7 +146,7 @@ def detect_anomalies(df: pd.DataFrame, column: str, threshold: float = 2.5) -> p
     return df_copy
 
 
-def export_csv(dataframe: pd.DataFrame, filename: str) -> bytes:
+def export_csv(dataframe: pd.DataFrame) -> bytes:
     """Convert dataframe to CSV bytes for download"""
     return dataframe.to_csv(index=False).encode('utf-8')
 
@@ -1107,7 +1107,7 @@ elif st.session_state.current_page == "Analytics Hub":
     st.subheader("💾 Downloads")
     st.download_button(
         "📥 Download Quality Report",
-        export_csv(anomaly_df, "data_anomalies.csv"),
+        export_csv(anomaly_df),
         "data_anomalies.csv",
         "text/csv"
     )
@@ -1166,7 +1166,7 @@ elif st.session_state.current_page == "Comparison Tool":
         # Download comparison
         st.download_button(
             "📥 Download Comparison Data",
-            export_csv(latest_data, "country_comparison.csv"),
+            export_csv(latest_data),
             "country_comparison.csv",
             "text/csv"
         )
@@ -1177,6 +1177,11 @@ elif st.session_state.current_page == "Scenario Builder":
         "🎯 **Purpose:** Create 'what-if' scenarios to model the impact of different policies or transitions. "
         "See how temperature might change with different interventions."
     )
+    
+    # Train model for scenario predictions
+    full_X, full_y = build_features(filtered_df)
+    full_model = LinearRegression()
+    full_model.fit(full_X, full_y)
     
     st.markdown("---")
     st.subheader("📋 Create Your Scenario")

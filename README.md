@@ -194,15 +194,20 @@ global_env_trend/
 │   └── processed/
 │       └── v1/
 │           ├── environmental_trends_clean.csv    # Cleaned dataset
-│           └── model_predictions.csv             # Temperature forecasts
+│           ├── model_predictions.csv             # Temperature forecasts
+│           └── model_predictions_with_ci.csv     # Model predictions with confidence intervals
 ├── jupyter_notebooks/
 │   ├── 01_data_ingestion_quality_checks.ipynb    # Data cleaning and validation
 │   ├── 02_eda_descriptive_stats.ipynb            # Exploratory data analysis
 │   ├── 03_hypothesis_testing.ipynb               # Statistical hypothesis tests
 │   └── 04_predictive_modeling.ipynb              # ML model training and forecasting
+├── raw_dataset/                    # Raw dataset directory
 ├── Procfile                        # Heroku deployment configuration
 ├── requirements.txt                # Python dependencies
 ├── setup.sh                        # Streamlit configuration for Heroku
+├── .gitignore                      # Git ignore file
+├── .python-version                 # Python version specification
+├── .slugignore                     # Heroku slug ignore file
 └── README.md                       # This file
 ```
 

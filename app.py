@@ -245,7 +245,8 @@ if "year_slider" not in st.session_state:
 year_range = st.sidebar.slider(
     "Year range", 
     min_year, 
-    max_year, 
+    max_year,
+    value=(min_year, max_year),
     key="year_slider",
     help="Filter data by time period"
 )
@@ -633,7 +634,7 @@ elif st.session_state.current_page == "Data Overview":
             {
                 "Column": missing_by_col.index,
                 "Missing Count": missing_by_col.values,
-                "Percentage": (missing_by_col.values / float(len(clean_df)) * 100).round(2),
+                "Percentage": (missing_by_col / len(clean_df) * 100).round(2),
             }
         )
         st.dataframe(missing_df, use_container_width=True, hide_index=True)
@@ -943,36 +944,39 @@ elif st.session_state.current_page == "Modeling & Prediction":
     X_train, y_train = build_features(train_df)
     X_test, y_test = build_features(test_df)
 
-    model = LinearRegression()
-    model.fit(X_train, y_train)
-    y_pred = model.predict(X_test)
-    metrics = model_metrics(y_test, y_pred)
+    if y_train is not None and y_test is not None:
+        model = LinearRegression()
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+        metrics = model_metrics(y_test, y_pred)
 
-    st.markdown("**Model Performance (on test data):**")
-    metric_cols = st.columns(3)
-    with metric_cols[0]:
-        st.metric("MAE", f"{metrics['MAE']:.3f}°C")
-        st.caption("Average prediction error. Lower is better. E.g., 0.5°C means most predictions are within ±0.5°C of actual.")
-    with metric_cols[1]:
-        st.metric("RMSE", f"{metrics['RMSE']:.3f}°C")
-        st.caption("(Root Mean Squared Error) Penalizes large mistakes more. Another way to measure how far off predictions are.")
-    with metric_cols[2]:
-        st.metric("R² Score", f"{metrics['R2']:.3f}")
+        st.markdown("**Model Performance (on test data):**")
+        metric_cols = st.columns(3)
+        with metric_cols[0]:
+            st.metric("MAE", f"{metrics['MAE']:.3f}°C")
+            st.caption("Average prediction error. Lower is better. E.g., 0.5°C means most predictions are within ±0.5°C of actual.")
+        with metric_cols[1]:
+            st.metric("RMSE", f"{metrics['RMSE']:.3f}°C")
+            st.caption("(Root Mean Squared Error) Penalizes large mistakes more. Another way to measure how far off predictions are.")
+        with metric_cols[2]:
+            st.metric("R² Score", f"{metrics['R2']:.3f}")
         st.caption("How much variation the model explains. 1.0 = perfect; 0.5 = explains half; 0 = no better than guessing average.")
 
-    st.info(
-        "💡 **What this means:** These numbers tell you if the model is trustworthy. If R² > 0.6 and MAE is small, predictions are fairly reliable. "
-        "If R² < 0.4, the model is missing important factors and should be used with caution."
-    )
+        st.info(
+            "💡 **What this means:** These numbers tell you if the model is trustworthy. If R² > 0.6 and MAE is small, predictions are fairly reliable. "
+            "If R² < 0.4, the model is missing important factors and should be used with caution."
+        )
 
-    st.subheader("📋 Test Results")
-    st.markdown("**Actual vs. Predicted temperatures on test data:**")
-    results_df = test_df[["Year", "Country", "Avg_Temperature_degC"]].copy()
-    results_df["Year"] = results_df["Year"].astype(int)
-    results_df["Predicted_Avg_Temperature_degC"] = y_pred
-    results_df["Error (°C)"] = (results_df["Avg_Temperature_degC"] - results_df["Predicted_Avg_Temperature_degC"]).round(3)
-    st.dataframe(results_df, use_container_width=True, hide_index=True)
-    st.caption("🔍 Check the Error column: small numbers mean good predictions; large numbers mean the model struggled.")
+        st.subheader("📋 Test Results")
+        st.markdown("**Actual vs. Predicted temperatures on test data:**")
+        results_df = test_df[["Year", "Country", "Avg_Temperature_degC"]].copy()
+        results_df["Year"] = results_df["Year"].astype(int)
+        results_df["Predicted_Avg_Temperature_degC"] = y_pred
+        results_df["Error (°C)"] = (results_df["Avg_Temperature_degC"] - results_df["Predicted_Avg_Temperature_degC"]).round(3)
+        st.dataframe(results_df, use_container_width=True, hide_index=True)
+        st.caption("🔍 Check the Error column: small numbers mean good predictions; large numbers mean the model struggled.")
+    else:
+        st.warning("⚠️ Insufficient data for model training. Please check your selected countries and year range.")
 
     st.subheader("🔮 Future Temperature Forecasts")
     st.markdown(
@@ -1015,8 +1019,14 @@ elif st.session_state.current_page == "Modeling & Prediction":
     )
 
     full_X, full_y = build_features(filtered_df)
-    full_model = LinearRegression()
-    full_model.fit(full_X, full_y)
+    model_ready = False
+    if full_y is not None and full_X is not None:
+        full_model = LinearRegression()
+        full_model.fit(full_X, full_y)
+        model_ready = True
+    else:
+        st.warning("⚠️ Unable to build model - insufficient data. Please check your filters.")
+        full_model = None
 
     tool_country_options = all_countries
     default_country = tool_country_options[0]
@@ -1072,7 +1082,7 @@ elif st.session_state.current_page == "Modeling & Prediction":
         )
         submitted = st.form_submit_button("🔮 Predict temperature")
 
-    if submitted:
+    if submitted and model_ready and full_model is not None:
         input_df = pd.DataFrame(
             [
                 {
@@ -1206,7 +1216,7 @@ elif st.session_state.current_page == "Comparison Tool":
                 y=metric,
                 title=f"{metric.replace('_', ' ')} in {latest_year}",
                 color="Country",
-                text_auto='.2f'
+                text_auto=True
             )
             st.plotly_chart(fig, use_container_width=True)
         
@@ -1240,121 +1250,134 @@ elif st.session_state.current_page == "Scenario Builder":
     )
     
     # Train model for scenario predictions
-    full_X, full_y = build_features(filtered_df)
-    full_model = LinearRegression()
-    full_model.fit(full_X, full_y)
+    full_X_scenario, full_y_scenario = build_features(filtered_df)
+    scenario_ready = False
+    full_model = None
+    if full_y_scenario is not None and full_X_scenario is not None:
+        full_model = LinearRegression()
+        full_model.fit(full_X_scenario, full_y_scenario)
+        scenario_ready = True
+    else:
+        st.warning("⚠️ Unable to build model for scenarios - insufficient data. Please check your filters.")
+        scenario_ready = False
     
     st.markdown("---")
     st.subheader("📋 Create Your Scenario")
     
-    col1, col2 = st.columns(2)
-    with col1:
-        scenario_name = st.text_input(
-            "Scenario name", 
-            "My Environmental Scenario",
-            help="Give your scenario a descriptive name"
-        )
-    with col2:
-        scenario_year = st.number_input(
-            "Target year", 
-            value=2030, 
-            min_value=2025, 
-            max_value=2050,
-            help="Select a future year for prediction (2025-2050)"
-        )
-    
-    st.markdown("**Adjust these factors from current levels:**")
-    
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        co2_reduction = st.slider("CO₂ reduction (%)", -50, 50, 0, help="% change from current level")
-        renew_increase = st.slider(
-            "Renewable energy increase (%)", 
-            -20, 50, 0,
-            help="Change in renewable energy share"
-        )
-    with col2:
-        forest_increase = st.slider(
-            "Forest area increase (%)", 
-            -20, 30, 0,
-            help="Change in forest coverage percentage"
-        )
-        extreme_change = st.slider(
-            "Extreme events change (%)", 
-            -50, 100, 0,
-            help="Projected change in frequency of extreme weather events"
-        )
-    with col3:
-        rainfall_change = st.slider(
-            "Rainfall change (mm)", 
-            -200, 200, 0,
-            help="Change in annual rainfall amount"
-        )
-        pop_growth = st.slider(
-            "Population growth (%)", 
-            -10, 50, 0,
-            help="Projected population growth rate"
-        )
-    
-    if st.button("🚀 Run Scenario"):
-        # Get current baseline
-        baseline = filtered_df[filtered_df["Year"] == filtered_df["Year"].max()].mean(numeric_only=True)
+    if not scenario_ready:
+        st.warning("❌ Scenario builder is unavailable. Please adjust your filters to get enough data.")
+    else:
+        col1, col2 = st.columns(2)
+        with col1:
+            scenario_name = st.text_input(
+                "Scenario name", 
+                "My Environmental Scenario",
+                help="Give your scenario a descriptive name"
+            )
+        with col2:
+            scenario_year = st.number_input(
+                "Target year", 
+                value=2030, 
+                min_value=2025, 
+                max_value=2050,
+                help="Select a future year for prediction (2025-2050)"
+            )
         
-        # Calculate scenario values
-        scenario_data = {
-            "Year": scenario_year,
-            "CO2_Emissions_tons_per_capita": baseline["CO2_Emissions_tons_per_capita"] * (1 + co2_reduction/100),
-            "Renewable_Energy_pct": min(100, baseline["Renewable_Energy_pct"] * (1 + renew_increase/100)),
-            "Forest_Area_pct": min(100, baseline["Forest_Area_pct"] * (1 + forest_increase/100)),
-            "Extreme_Weather_Events": max(0, baseline["Extreme_Weather_Events"] * (1 + extreme_change/100)),
-            "Rainfall_mm": max(0, baseline["Rainfall_mm"] + rainfall_change),
-            "Population": baseline["Population"] * (1 + pop_growth/100),
-            "Sea_Level_Rise_mm": baseline["Sea_Level_Rise_mm"],
-        }
+        st.markdown("**Adjust these factors from current levels:**")
         
-        # Predict temperature for scenario
-        scenario_df = pd.DataFrame([scenario_data])
-        scenario_df["Country"] = selected_countries[0] if selected_countries else "Global"
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            co2_reduction = st.slider("CO₂ reduction (%)", -50, 50, 0, help="% change from current level")
+            renew_increase = st.slider(
+                "Renewable energy increase (%)", 
+                -20, 50, 0,
+                help="Change in renewable energy share"
+            )
+        with col2:
+            forest_increase = st.slider(
+                "Forest area increase (%)", 
+                -20, 30, 0,
+                help="Change in forest coverage percentage"
+            )
+            extreme_change = st.slider(
+                "Extreme events change (%)", 
+                -50, 100, 0,
+                help="Projected change in frequency of extreme weather events"
+            )
+        with col3:
+            rainfall_change = st.slider(
+                "Rainfall change (mm)", 
+                -200, 200, 0,
+                help="Change in annual rainfall amount"
+            )
+            pop_growth = st.slider(
+                "Population growth (%)", 
+                -10, 50, 0,
+                help="Projected population growth rate"
+            )
         
-        scenario_X, _ = build_features(scenario_df, include_target=False)
-        scenario_X = align_features(scenario_X, full_X.columns.tolist())
-        pred_temp = full_model.predict(scenario_X)[0]
-        
-        # Baseline prediction
-        baseline_data = filtered_df[filtered_df["Year"] == filtered_df["Year"].max()].iloc[0].to_dict()
-        baseline_X, _ = build_features(pd.DataFrame([baseline_data]), include_target=False)
-        baseline_X = align_features(baseline_X, full_X.columns.tolist())
-        baseline_temp = full_model.predict(baseline_X)[0]
-        
-        temp_diff = pred_temp - baseline_temp
-        
-        # Display results
-        st.markdown("---")
-        st.subheader("📊 Scenario Results")
-        
-        results_col1, results_col2, results_col3 = st.columns(3)
-        with results_col1:
-            st.metric("Scenario Name", scenario_name)
-        with results_col2:
-            st.metric("Target Year", int(scenario_year))
-        with results_col3:
-            st.metric("Temperature Change", f"{temp_diff:+.2f}°C")
-        
-        st.info(
-            f"**{scenario_name} ({int(scenario_year)})**\n\n"
-            f"📍 Baseline temperature: {baseline_temp:.2f}°C\n"
-            f"🎯 Scenario temperature: {pred_temp:.2f}°C\n"
-            f"📈 Difference: {temp_diff:+.2f}°C\n\n"
-            f"**What this means:** With your proposed changes, "
-            f"{'temperature would rise' if temp_diff > 0 else 'temperature would drop'} by {abs(temp_diff):.2f}°C compared to current trends."
-        )
-        
-        # Comparison visualization
-        comparison_data = pd.DataFrame({
-            "Scenario": ["Current Baseline", scenario_name],
-            "Temperature (°C)": [baseline_temp, pred_temp]
-        })
-        
-        fig = px.bar(comparison_data, x="Scenario", y="Temperature (°C)", color="Scenario", text_auto='.2f')
-        st.plotly_chart(fig, use_container_width=True)
+        if st.button("🚀 Run Scenario"):
+            if full_model is None:
+                st.error("Model not available. Please check your data filters.")
+            else:
+                # Get current baseline
+                baseline = filtered_df[filtered_df["Year"] == filtered_df["Year"].max()].mean(numeric_only=True)
+                
+                # Calculate scenario values
+                scenario_data = {
+                    "Year": scenario_year,
+                    "CO2_Emissions_tons_per_capita": baseline["CO2_Emissions_tons_per_capita"] * (1 + co2_reduction/100),
+                    "Renewable_Energy_pct": min(100, baseline["Renewable_Energy_pct"] * (1 + renew_increase/100)),
+                    "Forest_Area_pct": min(100, baseline["Forest_Area_pct"] * (1 + forest_increase/100)),
+                    "Extreme_Weather_Events": max(0, baseline["Extreme_Weather_Events"] * (1 + extreme_change/100)),
+                    "Rainfall_mm": max(0, baseline["Rainfall_mm"] + rainfall_change),
+                    "Population": baseline["Population"] * (1 + pop_growth/100),
+                    "Sea_Level_Rise_mm": baseline["Sea_Level_Rise_mm"],
+                }
+                
+                # Predict temperature for scenario
+                scenario_df = pd.DataFrame([scenario_data])
+                scenario_df["Country"] = selected_countries[0] if selected_countries else "Global"
+                
+                scenario_X, _ = build_features(scenario_df, include_target=False)
+                scenario_X = align_features(scenario_X, full_X_scenario.columns.tolist())
+                pred_temp = full_model.predict(scenario_X)[0]
+                
+                # Baseline prediction
+                baseline_data = filtered_df[filtered_df["Year"] == filtered_df["Year"].max()].iloc[0].to_dict()
+                baseline_X, _ = build_features(pd.DataFrame([baseline_data]), include_target=False)
+                baseline_X = align_features(baseline_X, full_X_scenario.columns.tolist())
+                baseline_temp = full_model.predict(baseline_X)[0]
+                
+                temp_diff = pred_temp - baseline_temp
+                
+                # Display results
+                st.markdown("---")
+                st.subheader("📊 Scenario Results")
+                
+                results_col1, results_col2, results_col3 = st.columns(3)
+                with results_col1:
+                    st.metric("Scenario Name", scenario_name)
+                with results_col2:
+                    st.metric("Target Year", int(scenario_year))
+                with results_col3:
+                    st.metric("Temperature Change", f"{temp_diff:+.2f}°C")
+                
+                st.info(
+                    f"**{scenario_name} ({int(scenario_year)})**\n\n"
+                    f"📍 Baseline temperature: {baseline_temp:.2f}°C\n"
+                    f"🎯 Scenario temperature: {pred_temp:.2f}°C\n"
+                    f"📈 Difference: {temp_diff:+.2f}°C\n\n"
+                    f"**What this means:** With your proposed changes, "
+                    f"{'temperature would rise' if temp_diff > 0 else 'temperature would drop'} by {abs(temp_diff):.2f}°C compared to current trends."
+                )
+                
+                # Comparison visualization
+                comparison_data = pd.DataFrame({
+                    "Scenario": ["Current Baseline", scenario_name],
+                    "Temperature (°C)": [baseline_temp, pred_temp]
+                })
+                
+                fig = px.bar(comparison_data, x="Scenario", y="Temperature (°C)", color="Scenario", text_auto=True)
+                st.plotly_chart(fig, use_container_width=True)
 

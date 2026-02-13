@@ -175,6 +175,13 @@ Although stakeholders have access to raw environmental data, they need clear vis
 * **Interpretation:** Forest coverage alone is not a strong predictor of extreme weather events at the country level. This makes sense because extreme weather is influenced by many factors including ocean currents, atmospheric patterns, geography, and global climate systems. Forest area may provide localized benefits (soil stability, flood mitigation) but does not significantly reduce country-level extreme weather event counts.
 * **Conclusion:** The hypothesis is not strongly supported by the data. While forest conservation remains important for many environmental reasons, it is not a primary factor in reducing extreme weather event frequency at the national scale.
 
+## Data Ethics and Privacy
+
+* **Data Provenance:** The dataset was sourced from [Kaggle](https://www.kaggle.com/datasets/adilshamim8/temperature) and is publicly available for analysis. We acknowledge the original data contributors.
+* **Privacy Concerns:** This project uses aggregated, country-level environmental data. No Personally Identifiable Information (PII) is contained in the dataset, and no individuals can be identified.
+* **Potential Bias:** We acknowledge potential bias in the data reporting mechanisms. Developing nations may have different environmental monitoring capabilities compared to developed nations, which could affect the completeness or accuracy of historical records (e.g., extreme weather event counts).
+* **Usage Policy:** This project is for educational and assessment purposes only as part of the Code Institute Diploma in Data Analytics. The insights and predictive models should not be used for official policy-making without further validation from official climate science bodies (IPCC, NOAA, etc.).
+
 ## Project Structure
 
 ```

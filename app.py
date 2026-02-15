@@ -704,7 +704,7 @@ elif st.session_state.current_page == "Data Overview":
             "Forest_Area_pct",
         ],
         "Description": [
-            "Year of observation (2000-2024)",
+            "Year of observation (5-year intervals: 2000, 2005, 2010, 2015, 2020, 2024)",
             "Country name",
             "Average temperature in degrees Celsius",
             "Per-capita CO2 emissions in metric tons",
@@ -1289,8 +1289,14 @@ elif st.session_state.current_page == "Comparison Tool":
 elif st.session_state.current_page == "Scenario Builder":
     st.subheader("⚙️ Scenario Builder")
     st.write(
-        "🎯 **Purpose:** Create 'what-if' scenarios to model the impact of different policies or transitions. "
-        "See how temperature might change with different interventions."
+        "🎯 **Purpose:** Create 'what-if' scenarios to explore how environmental factors correlate with temperature. "
+        "Adjust multiple indicators to see their combined effect on temperature estimates."
+    )
+    
+    st.warning(
+        "⚠️ **Important:** This tool uses a multivariate regression model to explore relationships between environmental factors. "
+        "It shows how indicators correlate with temperature based on historical data, NOT precise climate predictions. "
+        "Use this for educational exploration and understanding factor relationships, not for policy decisions."
     )
     
     # Train model for scenario predictions
@@ -1409,11 +1415,12 @@ elif st.session_state.current_page == "Scenario Builder":
                 
                 st.info(
                     f"**{scenario_name} ({int(scenario_year)})**\n\n"
-                    f"📍 Baseline temperature: {baseline_temp:.2f}°C\n"
-                    f"🎯 Scenario temperature: {pred_temp:.2f}°C\n"
+                    f"📍 Baseline estimate: {baseline_temp:.2f}°C\n"
+                    f"🎯 Scenario estimate: {pred_temp:.2f}°C\n"
                     f"📈 Difference: {temp_diff:+.2f}°C\n\n"
-                    f"**What this means:** With your proposed changes, "
-                    f"{'temperature would rise' if temp_diff > 0 else 'temperature would drop'} by {abs(temp_diff):.2f}°C compared to current trends."
+                    f"**Interpretation:** Based on historical correlations between environmental factors and temperature, "
+                    f"your scenario suggests a {abs(temp_diff):.2f}°C {'increase' if temp_diff > 0 else 'decrease'} compared to baseline. "
+                    f"Remember: This shows correlations, not causation. Real climate outcomes depend on many interconnected factors."
                 )
                 
                 # Comparison visualization

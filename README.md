@@ -25,11 +25,12 @@ This capstone project demonstrates comprehensive data analytics skills applied t
 ## Dataset Content
 
 * The dataset is sourced from [Kaggle](https://www.kaggle.com/datasets/adilshamim8/temperature). We created a user story in which data analytics can be applied in a real project in the workplace.
-* The dataset has 158 rows and represents environmental records from 19 countries across the globe. It indicates environmental indicators (temperature, emissions, rainfall, renewable energy, extreme weather events, forest coverage) and their respective values for the period between 2000 and 2024.
+* The dataset has 156 rows and represents environmental records from 19 countries across the globe. It indicates environmental indicators (temperature, emissions, rainfall, renewable energy, extreme weather events, forest coverage) and their respective values collected at 5-year intervals from 2000 to 2024.
+* **Note:** The dataset contains some duplicate country-year combinations (42 duplicate entries for 7 countries: Australia, Brazil, China, Germany, India, Nigeria, Russia). These duplicates were present in the original source data and represent different measurement records for the same country and year.
 
 |Variable|Meaning|Units|
 |:----|:----|:----|
-|Year|Year of observation|2000 - 2024|
+|Year|Year of observation|2000, 2005, 2010, 2015, 2020, 2024|
 |Country|Country name|19 countries including United States, China, Germany, Brazil, Australia, India, Nigeria, Russia, Japan, Canada, Mexico, France, Indonesia, United Kingdom, Spain, South Korea, Italy, Saudi Arabia, South Africa|
 |Avg_Temperature_degC|Average temperature in degrees Celsius|5.1 - 28.5|
 |CO2_Emissions_tons_per_capita|Per-capita CO2 emissions in metric tons|0.5 - 20.2|
@@ -258,11 +259,11 @@ Stakeholders have raw environmental data, but they need clear visualizations and
   - **Impact:** Findings may not generalize to underrepresented regions
   - **Mitigation:** Results are clearly framed as "19-country analysis," not global
 
-* **Temporal Bias:** 25-year time period (2000-2024) may not capture:
+* **Temporal Bias:** 25-year span (2000-2024) with 6 measurement points may not capture:
   - Long-term climate cycles (30+ year periodicities)
   - Pre-2000 historical context needed for climate attribution
-  - Potential data collection methodology changes over time
-  - **Mitigation:** We use time-aware train-test splits and acknowledge limited data
+  - Trends between measurement points (5-year intervals)
+  - **Mitigation:** We use time-aware train-test splits and acknowledge limited temporal resolution
 
 * **Model Bias:** Linear regression assumptions:
   - Assumes straight-line trends over time (real climate patterns may not be straight-line)
@@ -416,7 +417,7 @@ global_env_trend/
 4. **04_predictive_modeling.ipynb**
    - Purpose: Train temperature forecasting model, generate predictions
    - Inputs: `data/processed/v1/environmental_trends_clean.csv`
-   - Outputs: `data/processed/v1/model_predictions.csv`
+   - Outputs: `data/processed/v1/model_predictions.csv`, `data/processed/v1/model_predictions_with_ci.csv`
 
 **Note:** Notebook 1 must be run first as it creates the clean dataset used by all others. Notebook 4 should be run last as it generates the predictions displayed in the dashboard.
 
@@ -535,7 +536,7 @@ All pages respect the sidebar filters:
 
 ## Credits
 
-* **Dataset:** This project uses the Global Environmental Trends 2000-2024 dataset from [Kaggle](https://www.kaggle.com/datasets/adilshamim8/temperature), originally compiled by Adil Shamim. The dataset provides environmental indicators including temperature, emissions, renewable energy, extreme weather events, and forest coverage for 19 countries over a 25-year period.
+* **Dataset:** This project uses the Global Environmental Trends 2000-2024 dataset from [Kaggle](https://www.kaggle.com/datasets/adilshamim8/temperature), originally compiled by Adil Shamim. The dataset provides environmental indicators including temperature, emissions, renewable energy, extreme weather events, and forest coverage for 19 countries spanning 25 years (2000-2024) with measurements at 5-year intervals.
 
 * **Code Institute:** Project structure and methodology guidance from the Code Institute Data Analytics program. The project follows the assessment criteria and best practices taught in the capstone project module.
 

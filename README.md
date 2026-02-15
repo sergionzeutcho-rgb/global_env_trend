@@ -146,10 +146,10 @@ Stakeholders have raw environmental data, but they need clear visualizations and
 
 ### Page 6: Analytics Hub
 * Advanced analytics and insights
-	* Data quality dashboard with completeness and uniqueness metrics
-	* Overall quality score calculation
-	* Correlation heatmap showing relationships between all key metrics with color-coded values
-	* Anomaly detection identifying unusual data points by country using z-score method
+	* Data quality dashboard showing how complete and unique the data is
+	* Overall quality score to quickly assess data reliability
+	* Correlation heatmap showing how different environmental factors relate to each other with color-coded values
+	* Anomaly detection to find unusual data points that stand out from normal patterns for each country
 	* Downloadable quality reports and anomaly data in CSV format
 
 ### Page 7: Comparison Tool
@@ -161,12 +161,12 @@ Stakeholders have raw environmental data, but they need clear visualizations and
 	* Downloadable comparison data in CSV format
 
 ### Page 8: Scenario Builder
-* Interactive what-if analysis tool
-	* Create named scenarios with target years (2025-2050)
-	* Adjust environmental parameters: CO₂ reduction, renewable energy increase, forest area change, extreme events, rainfall, and population growth
-	* Real-time temperature prediction based on scenario inputs
-	* Visual comparison between baseline and scenario outcomes
-	* Shows temperature difference and impact interpretation
+* Interactive "what-if" exploration tool
+	* Create named scenarios for future years (2025-2050)
+	* Adjust environmental factors: CO₂ reduction, renewable energy increase, forest area change, extreme events, rainfall, and population growth
+	* See estimated temperature based on your chosen scenario
+	* Visual comparison between current baseline and your scenario
+	* Shows temperature difference and what it might mean
 
 ## Project Hypothesis and Validation
 
@@ -259,17 +259,17 @@ Stakeholders have raw environmental data, but they need clear visualizations and
   - **Impact:** Findings may not generalize to underrepresented regions
   - **Mitigation:** Results are clearly framed as "19-country analysis," not global
 
-* **Temporal Bias:** 25-year span (2000-2024) with 6 measurement points may not capture:
-  - Long-term climate cycles (30+ year periodicities)
-  - Pre-2000 historical context needed for climate attribution
-  - Trends between measurement points (5-year intervals)
-  - **Mitigation:** We use time-aware train-test splits and acknowledge limited temporal resolution
+* **Temporal Bias:** 24-year span (2000-2024) with 6 measurement points may not capture:
+  - Long-term climate cycles (patterns that repeat every 30+ years)
+  - Historical context from before 2000 needed for understanding climate changes
+  - Trends between measurement points (what happened in the years between measurements)
+  - **Mitigation:** We split training and test data by time periods and acknowledge these data limitations
 
-* **Model Bias:** Linear regression assumptions:
-  - Assumes straight-line trends over time (real climate patterns may not be straight-line)
-  - Per-country models may not capture how countries affect each other globally
-  - Past trends may not continue into the future (patterns can break)
-  - **Mitigation:** Models are clearly labeled as "trend-based" not "causal" (showing patterns, not causes)
+* **Model Bias:** Our simple prediction model has limitations:
+  - Assumes trends follow a straight line over time (real climate patterns may curve or change direction)
+  - Each country's model works separately and doesn't capture how countries affect each other
+  - Past patterns may not continue into the future (unexpected changes can happen)
+  - **Mitigation:** We clearly label models as "trend-based" not "causal" (they show patterns, not causes)
 
 ### Ethical Considerations for Climate Analysis
 
@@ -309,10 +309,10 @@ Stakeholders have raw environmental data, but they need clear visualizations and
   - ❌ Not permitted: Publishing predictions as peer-reviewed scientific findings
 
 * **Model Uncertainty:**
-  - **These are exploratory trends, not definitive forecasts**
-  - Linear regression gives single number predictions, not probability ranges (see confidence intervals for uncertainty range)
-  - Real climate is affected by policy changes, new technology, and natural variations not included in this model
-  - Users should interpret predictions as "if current trends continue" scenarios, not certainties
+  - **These are exploratory trends to help us learn, not definitive forecasts**
+  - Our simple model gives single number predictions, not ranges of possibilities (confidence intervals show uncertainty ranges)
+  - Real climate is affected by policy changes, new technology, and natural variations that our model doesn't include
+  - Users should think of predictions as "if current trends continue" scenarios, not certainties about the future
 
 * **Recommended Validation Path:**
   - IPCC Reports: Official consensus on climate science
@@ -321,12 +321,12 @@ Stakeholders have raw environmental data, but they need clear visualizations and
   - Peer-reviewed climate literature: Scientific consensus for specific hypotheses
 
 * **Limitations Explicitly Stated:**
-  - 25-year time series per country (short for climate studies)
-  - Country-level aggregation (hides regional variation)
-  - Historical data quality varies by country and metric
-  - No causality testing (only association)
-  - No consideration of climate policies enacted post-2024
-  - No integration of emissions reduction targets or climate commitments
+  - Only 24 years of data per country (short period for understanding climate)
+  - Country-level averages (doesn't show differences within each country)
+  - Data quality varies between countries and different measurements
+  - We only show connections between factors, not cause-and-effect
+  - We don't include climate policies that might be created after 2024
+  - We don't include countries' emissions reduction goals or climate commitments
 
 ### Accountability and Oversight
 

@@ -177,10 +177,168 @@ Although stakeholders have access to raw environmental data, they need clear vis
 
 ## Data Ethics and Privacy
 
-* **Data Provenance:** The dataset was sourced from [Kaggle](https://www.kaggle.com/datasets/adilshamim8/temperature) and is publicly available for analysis. We acknowledge the original data contributors.
-* **Privacy Concerns:** This project uses aggregated, country-level environmental data. No Personally Identifiable Information (PII) is contained in the dataset, and no individuals can be identified.
-* **Potential Bias:** We acknowledge potential bias in the data reporting mechanisms. Developing nations may have different environmental monitoring capabilities compared to developed nations, which could affect the completeness or accuracy of historical records (e.g., extreme weather event counts).
-* **Usage Policy:** This project is for educational and assessment purposes only as part of the Code Institute Diploma in Data Analytics. The insights and predictive models should not be used for official policy-making without further validation from official climate science bodies (IPCC, NOAA, etc.).
+### Data Provenance and Transparency
+
+* **Data Source:** The dataset is sourced from [Kaggle](https://www.kaggle.com/datasets/adilshamim8/temperature), compiled by Adil Shamim, and represents aggregated environmental indicators from 19 countries (2000-2024).
+* **Transparency Commitment:** We maintain transparency by:
+  - Preserving the original raw dataset unchanged for auditability
+  - Documenting all data cleaning and preprocessing steps in Notebook 01
+  - Publishing all methodology and assumptions in this README
+  - Tracking all model predictions with metadata (dates, parameters, versions)
+  - Maintaining version history in Git for reproducibility
+
+* **Data Attribution:** We acknowledge and credit:
+  - Original data compiler: Adil Shamim (Kaggle)
+  - Data source organizations: National meteorological agencies, World Bank, UN agencies
+  - Code Institute: Educational framework and assessment criteria
+  - Open-source communities: Pandas, Scikit-learn, Streamlit, Plotly developers
+
+### Privacy and Personally Identifiable Information (PII)
+
+* **No Personal Data:** This project exclusively uses aggregated, country-level environmental indicators. The dataset contains:
+  - Temporal data (2000-2024 by year)
+  - Geographic data (19 country averages)
+  - Environmental metrics (temperature, emissions, rainfall, etc.)
+  - **No individual records, household data, or personal identifiers**
+
+* **Data Anonymization:** Country-level aggregation ensures complete anonymization:
+  - Individual records cannot be reverse-engineered
+  - Personal identities are completely protected
+  - Household and location privacy maintained
+  - Exportable data maintains same aggregation level
+
+* **Data Retention:** Environmental data is:
+  - Stored locally in CSV format (no external cloud storage)
+  - Version controlled in Git (accessible only to authorized users)
+  - Not shared with third parties
+  - Deletable by project owner as needed
+
+### Potential Bias and Limitations
+
+* **Measurement Bias:** We acknowledge systematic differences in environmental monitoring:
+  - **Developed nations:** Comprehensive satellite monitoring, dense weather station networks, precise CO2 tracking
+  - **Developing nations:** Limited monitoring infrastructure, potential underreporting of events, incomplete historical records
+  - **Impact:** This bias may underestimate environmental changes in developing countries and affect comparative analyses
+  - **Mitigation:** We analyze trends per country separately rather than assuming global uniformity
+
+* **Reporting Bias:** Extreme weather events show increasing trends that may reflect:
+  - **Real increase:** Genuine climate-driven increase in extreme events
+  - **Better detection:** Improved monitoring systems and reporting infrastructure since 2000
+  - **Media effect:** Increased public attention and media coverage amplifying visibility
+  - **Data quality:** Different countries use different definitions for "extreme weather events"
+  - **Mitigation:** We note this explicitly in the dashboard and encourage users to view trends as "reported" events, not necessarily "actual" events
+
+* **Selection Bias:** Dataset covers only 19 countries, not globally representative:
+  - Over-representation of developed nations (10/19 = 53%)
+  - Under-representation of Africa (3/19) and Southeast Asia (3/19)
+  - Island nations and small developing countries absent
+  - **Impact:** Findings may not generalize to underrepresented regions
+  - **Mitigation:** Results are clearly framed as "19-country analysis," not global
+
+* **Temporal Bias:** 25-year time period (2000-2024) may not capture:
+  - Long-term climate cycles (30+ year periodicities)
+  - Pre-2000 historical context needed for climate attribution
+  - Potential data collection methodology changes over time
+  - **Mitigation:** We use time-aware train-test splits and acknowledge limited data
+
+* **Model Bias:** Linear regression assumptions:
+  - Assumes linear trends over time (real climate may be non-linear)
+  - Per-country models may not capture global interactions
+  - Historical trends may not persist into future (structural break risk)
+  - **Mitigation:** Models are explicitly labeled "trend-based" not "causal"
+
+### Ethical Considerations for Climate Analysis
+
+* **Responsible Climate Communication:**
+  - ✅ We avoid catastrophizing or fear-mongering
+  - ✅ We acknowledge uncertainty and model limitations
+  - ✅ We distinguish correlation from causation explicitly
+  - ✅ We provide context for findings (e.g., climate zones affect baseline temperatures)
+  - ✅ We recommend official sources (IPCC, NOAA) for policy decisions
+
+* **Avoiding Misuse:**
+  - ❌ These predictions should NOT be used for official climate policy without validation
+  - ❌ Results should NOT be presented as scientific consensus (that's IPCC's role)
+  - ❌ Country comparisons should NOT fuel blame or guilt narratives
+  - ✅ Instead, use analysis for awareness, education, and discussion catalyst
+
+* **Equity Considerations:**
+  - Climate impacts are not equally distributed globally
+  - Vulnerable populations in developing nations may be most affected
+  - This analysis reflects developed-nation monitoring bias
+  - Energy transition recommendations must account for development levels
+  - **Result:** We avoid blaming developing nations for emissions without context of per-capita consumption
+
+* **Stakeholder Considerations:**
+  - **Students/Educators:** Use for learning data analytics methodology
+  - **Policy Makers:** May reference trends but must validate with official climate bodies
+  - **Climate Advocates:** May use findings to raise awareness
+  - **Fossil Fuel Industry:** Should not use to deny climate trends (methodology transparent for criticism)
+  - **Developing Nations:** Should not feel blamed when data reflects monitoring infrastructure, not actual trends
+
+### Usage Policy and Limitations
+
+* **Educational Use Only:**
+  - ✅ Permitted: Learning data analytics, teaching statistical methods, raising climate awareness
+  - ✅ Permitted: Sharing with educational institutions, citing in research papers
+  - ❌ Not permitted: Using for official government policy without expert review
+  - ❌ Not permitted: Publishing predictions as peer-reviewed scientific findings
+
+* **Model Uncertainty:**
+  - **These are exploratory trends, not definitive forecasts**
+  - Linear regression provides point estimates, not probability distributions (see confidence intervals for uncertainty range)
+  - Real climate is influenced by policy changes, technological breakthroughs, and natural variability not in this model
+  - User should interpret predictions as "if current trends continue" scenarios, not certainties
+
+* **Recommended Validation Path:**
+  - IPCC Reports: Official consensus on climate science
+  - NOAA Climate Prediction Center: Authoritative forecasts
+  - National Meteorological Services: Country-specific validation
+  - Peer-reviewed climate literature: Scientific consensus for specific hypotheses
+
+* **Limitations Explicitly Stated:**
+  - 25-year time series per country (short for climate studies)
+  - Country-level aggregation (hides regional variation)
+  - Historical data quality varies by country and metric
+  - No causality testing (only association)
+  - No consideration of climate policies enacted post-2024
+  - No integration of emissions reduction targets or climate commitments
+
+### Accountability and Oversight
+
+* **Transparency and Reproducibility:**
+  - All code is open-source and auditable (hosted on GitHub)
+  - All notebooks execute from raw data (full reproducibility)
+  - All assumptions documented in code comments and README
+  - All versions tracked (Git history captures evolution)
+  - Users can verify, critique, and improve methodology
+
+* **Feedback and Corrections:**
+  - If bias or errors discovered, they can be corrected and redeployed
+  - Contributors welcome to submit improvements
+  - Model performance monitored against actual outcomes post-deployment
+  - Results updated as new data becomes available
+
+* **Disclaimer:**
+  - This project is a **learning exercise** demonstrating data analytics capabilities
+  - It is **not official climate science** and should not be cited as such
+  - It is **subject to errors** in data collection, processing, or analysis
+  - **Use at your own risk** for any decision-making
+  - **Consult official sources** for any actions with real-world consequences
+
+### Responsible AI Principles Applied
+
+This project adheres to responsible AI principles:
+
+| Principle | Implementation |
+|-----------|-----------------|
+| **Transparency** | All methodology documented; code open-source; assumptions explicit |
+| **Fairness** | Acknowledges measurement bias; avoids blaming any nation; note data gaps |
+| **Accountability** | Clear disclaimers; limitations stated; attribution provided |
+| **Explainability** | Plain-language explanations; simple models; no black boxes |
+| **Privacy** | Aggregated data only; no individuals identifiable; no PII |
+| **Safety** | Predictions labeled exploratory; inappropriate uses discouraged |
+| **Human Agency** | Users encouraged to validate; official sources recommended; decisions with humans |
 
 ## Project Structure
 

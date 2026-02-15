@@ -342,7 +342,7 @@ st.markdown("### Quick guide")
 if "current_page" not in st.session_state:
     st.session_state.current_page = "Executive Summary"
 
-nav_cols = st.columns(5)
+nav_cols = st.columns(4)
 with nav_cols[0]:
     if st.button("📝 Executive Summary", use_container_width=True):
         st.session_state.current_page = "Executive Summary"
@@ -359,9 +359,23 @@ with nav_cols[3]:
     if st.button("🔍 Explore Patterns", use_container_width=True):
         st.session_state.current_page = "Explore Patterns"
         st.rerun()
-with nav_cols[4]:
+
+nav_cols2 = st.columns(4)
+with nav_cols2[0]:
     if st.button("🤖 Modeling & Prediction", use_container_width=True):
         st.session_state.current_page = "Modeling & Prediction"
+        st.rerun()
+with nav_cols2[1]:
+    if st.button("📊 Analytics Hub", use_container_width=True):
+        st.session_state.current_page = "Analytics Hub"
+        st.rerun()
+with nav_cols2[2]:
+    if st.button("🔄 Comparison Tool", use_container_width=True):
+        st.session_state.current_page = "Comparison Tool"
+        st.rerun()
+with nav_cols2[3]:
+    if st.button("⚙️ Scenario Builder", use_container_width=True):
+        st.session_state.current_page = "Scenario Builder"
         st.rerun()
 
 st.markdown("---")

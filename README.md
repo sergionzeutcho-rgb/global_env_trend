@@ -1,5 +1,27 @@
 # Global Environmental Trends (2000–2024)
 
+## Project Overview
+
+This capstone project demonstrates comprehensive data analytics skills applied to environmental climate data. The project covers the complete data analytics lifecycle: from business understanding and data quality assessment, through exploratory analysis and hypothesis testing, to predictive modeling and interactive dashboard deployment.
+
+**Key Deliverables:**
+- ✅ Business requirements analysis with stakeholder-driven user stories
+- ✅ Complete data pipeline: 4 Jupyter notebooks (ingestion → EDA → hypothesis testing → modeling)
+- ✅ Statistical analysis: 4 hypotheses tested with correlation studies and trend analysis
+- ✅ Predictive modeling: Linear regression with performance metrics (MAE, RMSE, R²)
+- ✅ Interactive dashboard: 8-page Streamlit application with visualizations and scenario modeling
+- ✅ Data ethics framework: Comprehensive privacy, bias, and responsible AI documentation
+- ✅ Deployment-ready: Configured for Heroku with all dependencies specified
+
+**Learning Outcomes Demonstrated:**
+1. **Business Understanding:** Clear requirements, user stories, and stakeholder needs
+2. **Data Collection & Quality:** Data ingestion, validation, and quality assessment
+3. **Exploratory Analysis:** Descriptive statistics, visualizations, and pattern discovery
+4. **Statistical Testing:** Hypothesis formulation, correlation analysis, and interpretation
+5. **Predictive Modeling:** Feature engineering, model training, evaluation, and forecasting
+6. **Communication:** Plain-language explanations, interactive dashboard, comprehensive documentation
+7. **Ethics & Privacy:** Data governance, bias acknowledgment, responsible AI principles
+
 ## Dataset Content
 
 * The dataset is sourced from [Kaggle](https://www.kaggle.com/datasets/adilshamim8/temperature). We created a user story in which data analytics can be applied in a real project in the workplace.
@@ -20,9 +42,9 @@
 
 ## Business Requirements
 
-As a data analyst, environmental stakeholders and policy teams have asked you to help understand global environmental trends and provide insights to support awareness and planning for climate action.
+As a data analyst, environmental stakeholders and policy teams have asked you to help understand global environmental trends. They want insights to support awareness and planning for climate action.
 
-Although stakeholders have access to raw environmental data, they need clear visualizations and interpretable insights to understand how different environmental indicators relate to each other and what the future trends might look like. They want to see patterns across countries and time periods to inform decision-making.
+Stakeholders have raw environmental data, but they need clear visualizations and easy-to-understand insights. They want to see how different environmental indicators connect to each other and what future trends might look like. They need to see patterns across countries and time periods to make better decisions.
 
 * 1—The client is interested in discovering how environmental indicators correlate with each other. Therefore, the client expects data visualizations of the correlated variables to show these relationships clearly.
 * 2—The client is interested in predicting future temperature trends to support planning and risk assessment for the next 3-5 years.
@@ -30,14 +52,14 @@ Although stakeholders have access to raw environmental data, they need clear vis
 ## Hypothesis and how to validate
 
 * Using environmental science knowledge, here are my hypothesis(es):
-* 1: We suspect that higher CO2 emissions per capita are associated with higher average temperature. However, this reflects association, not causation, as climate zones and development levels vary by country.
-	* How to validate: We will conduct a correlation study (Pearson and Spearman) to assess the strength and direction of the association between CO2 emissions per capita and average temperature.
-* 2: We suspect that higher renewable energy percentage is associated with lower or stabilizing CO2 emissions per capita.
-	* How to validate: We will conduct a correlation study to examine the relationship between renewable energy percentage and CO2 emissions per capita. A negative correlation would support this hypothesis.
+* 1: We suspect that higher CO2 emissions per person are linked to higher average temperature. Note: This shows a connection, not a cause-and-effect relationship, because climate zones and development levels are different in each country.
+	* How to validate: We will conduct a correlation study (Pearson and Spearman) to measure how strongly CO2 emissions and temperature are related.
+* 2: We suspect that higher renewable energy use is linked to lower or steadier CO2 emissions per person.
+	* How to validate: We will conduct a correlation study to examine the relationship between renewable energy and CO2 emissions. A negative correlation (when one goes up, the other goes down) would support this idea.
 * 3: We suspect that extreme weather events have increased over time from 2000 to 2024.
-	* How to validate: We will analyze the time trend of extreme weather events using line plots and calculate the change in event frequency between the first and last years in the dataset. We will also perform regression analysis to test for a statistically significant trend.
-* 4: We suspect that higher forest area percentage is associated with fewer extreme weather events.
-	* How to validate: We will conduct a correlation study to examine the relationship between forest area percentage and extreme weather events. We acknowledge this may show weak association as country-level forest coverage alone is not a strong predictor.
+	* How to validate: We will analyze the time trend of extreme weather events using line charts. We will calculate how much the number of events changed between 2000 and 2024. We will also use regression analysis to test if the trend is statistically significant.
+* 4: We suspect that higher forest area is linked to fewer extreme weather events.
+	* How to validate: We will conduct a correlation study to examine the relationship between forest area and extreme weather events. Note: This connection may be weak because forest coverage alone doesn't strongly predict weather events at the country level.
 
 ## The rationale to map the business requirements to the Data Visualisations
 
@@ -148,32 +170,32 @@ Although stakeholders have access to raw environmental data, they need clear vis
 ## Project Hypothesis and Validation
 
 ### Hypothesis 1: CO2 Emissions vs Temperature
-* **Hypothesis:** Higher CO2 emissions per capita are associated with higher average temperature.
+* **Hypothesis:** Higher CO2 emissions per person are linked to higher average temperature.
 * **Validation:** We conducted a Pearson correlation analysis on the dataset.
 * **Result:** The analysis showed a moderate negative correlation (approximately -0.3 to -0.4).
-* **Interpretation:** The negative correlation likely reflects climate zone and development differences rather than a causal relationship. Countries in colder climates (like Russia, Canada) tend to have higher emissions due to heating needs and industrial activity, while countries in warmer climates (like Nigeria, Indonesia) have lower per-capita emissions. This demonstrates the importance of not inferring causation from correlation in climate data.
-* **Conclusion:** The hypothesis is not supported by the data in the expected direction. However, this provides valuable insight into the complexity of climate-emissions relationships and the importance of controlling for geographic and developmental factors.
+* **Interpretation:** The negative correlation likely reflects differences in climate zones and development levels, not a cause-and-effect relationship. Countries in colder climates (like Russia, Canada) have higher emissions because of heating needs and industry. Countries in warmer climates (like Nigeria, Indonesia) have lower emissions per person. This shows why we cannot assume correlation means causation in climate data.
+* **Conclusion:** The data does not support the hypothesis as expected. However, this teaches us that climate-emissions relationships are complex. We need to account for geographic and development differences when analyzing the data.
 
 ### Hypothesis 2: Renewable Energy vs CO2 Emissions
-* **Hypothesis:** Higher renewable energy percentage is associated with lower or stabilizing CO2 emissions per capita.
-* **Validation:** We conducted a correlation study examining the relationship between renewable energy percentage and CO2 emissions per capita.
+* **Hypothesis:** Higher renewable energy use is linked to lower or steadier CO2 emissions per person.
+* **Validation:** We conducted a correlation study examining the relationship between renewable energy and CO2 emissions per person.
 * **Result:** The analysis showed a moderate negative correlation (approximately -0.4 to -0.5).
-* **Interpretation:** Countries with higher renewable energy shares tend to have lower per-capita emissions, which aligns with the expected relationship. However, this is an association and not proof of causation, as countries with lower emissions may invest more in renewables for various policy and economic reasons.
-* **Conclusion:** The hypothesis is supported by the observed association. This suggests that renewable energy adoption is a practical indicator for tracking decarbonization efforts, though multiple factors influence this relationship.
+* **Interpretation:** Countries with more renewable energy tend to have lower emissions per person, which matches what we expected. However, this is a connection, not proof that one causes the other. Countries with lower emissions may choose to invest more in renewables for policy or economic reasons.
+* **Conclusion:** The observed connection supports the hypothesis. This suggests that renewable energy adoption is a useful indicator for tracking carbon reduction efforts, though many factors affect this relationship.
 
 ### Hypothesis 3: Extreme Weather Events Trend
 * **Hypothesis:** Extreme weather events have increased over time from 2000 to 2024.
-* **Validation:** We analyzed time trends using line plots and calculated the change in event frequency between 2000 and 2024. We also performed linear regression to test for a statistically significant trend.
-* **Result:** Most countries show an increasing trend in extreme weather events, with global averages rising from approximately 10-15 events in 2000 to 25-30 events in 2024.
-* **Interpretation:** The upward trend supports climate risk awareness. However, we must acknowledge potential reporting bias, as improved monitoring and reporting systems over this period may partly explain the increase. Despite this caveat, the consistent pattern across multiple countries suggests a real increase in extreme weather frequency.
-* **Conclusion:** The hypothesis is supported by the data. The increasing trend in extreme weather events highlights the growing need for disaster preparedness and climate adaptation strategies.
+* **Validation:** We analyzed time trends using line charts and calculated the change in event frequency between 2000 and 2024. We also used linear regression to test if the trend is statistically significant.
+* **Result:** Most countries show an increasing trend in extreme weather events. Global averages rose from about 10-15 events in 2000 to 25-30 events in 2024.
+* **Interpretation:** The upward trend supports climate risk awareness. However, we must consider that better monitoring and reporting systems over this period may partly explain the increase. Even with this consideration, the consistent pattern across multiple countries suggests a real increase in extreme weather frequency.
+* **Conclusion:** The data supports the hypothesis. The increasing trend in extreme weather events shows the growing need for disaster preparedness and climate adaptation strategies.
 
 ### Hypothesis 4: Forest Area vs Extreme Events
-* **Hypothesis:** Higher forest area percentage is associated with fewer extreme weather events.
-* **Validation:** We conducted a correlation study between forest area percentage and extreme weather events.
-* **Result:** The analysis showed a weak association (correlation close to 0 or slightly negative).
-* **Interpretation:** Forest coverage alone is not a strong predictor of extreme weather events at the country level. This makes sense because extreme weather is influenced by many factors including ocean currents, atmospheric patterns, geography, and global climate systems. Forest area may provide localized benefits (soil stability, flood mitigation) but does not significantly reduce country-level extreme weather event counts.
-* **Conclusion:** The hypothesis is not strongly supported by the data. While forest conservation remains important for many environmental reasons, it is not a primary factor in reducing extreme weather event frequency at the national scale.
+* **Hypothesis:** Higher forest area is linked to fewer extreme weather events.
+* **Validation:** We conducted a correlation study between forest area and extreme weather events.
+* **Result:** The analysis showed a weak connection (correlation close to 0 or slightly negative).
+* **Interpretation:** Forest coverage alone does not strongly predict extreme weather events at the country level. This makes sense because extreme weather is influenced by many factors like ocean currents, atmospheric patterns, geography, and global climate systems. Forests may provide local benefits (like soil stability and flood control) but don't significantly reduce the country-level count of extreme weather events.
+* **Conclusion:** The data does not strongly support the hypothesis. While forest conservation is important for many environmental reasons, it is not a main factor in reducing extreme weather events at the national level.
 
 ## Data Ethics and Privacy
 
@@ -181,11 +203,11 @@ Although stakeholders have access to raw environmental data, they need clear vis
 
 * **Data Source:** The dataset is sourced from [Kaggle](https://www.kaggle.com/datasets/adilshamim8/temperature), compiled by Adil Shamim, and represents aggregated environmental indicators from 19 countries (2000-2024).
 * **Transparency Commitment:** We maintain transparency by:
-  - Preserving the original raw dataset unchanged for auditability
-  - Documenting all data cleaning and preprocessing steps in Notebook 01
-  - Publishing all methodology and assumptions in this README
-  - Tracking all model predictions with metadata (dates, parameters, versions)
-  - Maintaining version history in Git for reproducibility
+  - Keeping the original raw dataset unchanged so it can be audited
+  - Documenting all data cleaning steps in Notebook 01
+  - Publishing all methods and assumptions in this README
+  - Tracking all model predictions with details (dates, parameters, versions)
+  - Maintaining version history in Git so others can reproduce our work
 
 * **Data Attribution:** We acknowledge and credit:
   - Original data compiler: Adil Shamim (Kaggle)
@@ -242,10 +264,10 @@ Although stakeholders have access to raw environmental data, they need clear vis
   - **Mitigation:** We use time-aware train-test splits and acknowledge limited data
 
 * **Model Bias:** Linear regression assumptions:
-  - Assumes linear trends over time (real climate may be non-linear)
-  - Per-country models may not capture global interactions
-  - Historical trends may not persist into future (structural break risk)
-  - **Mitigation:** Models are explicitly labeled "trend-based" not "causal"
+  - Assumes straight-line trends over time (real climate patterns may not be straight-line)
+  - Per-country models may not capture how countries affect each other globally
+  - Past trends may not continue into the future (patterns can break)
+  - **Mitigation:** Models are clearly labeled as "trend-based" not "causal" (showing patterns, not causes)
 
 ### Ethical Considerations for Climate Analysis
 
@@ -286,9 +308,9 @@ Although stakeholders have access to raw environmental data, they need clear vis
 
 * **Model Uncertainty:**
   - **These are exploratory trends, not definitive forecasts**
-  - Linear regression provides point estimates, not probability distributions (see confidence intervals for uncertainty range)
-  - Real climate is influenced by policy changes, technological breakthroughs, and natural variability not in this model
-  - User should interpret predictions as "if current trends continue" scenarios, not certainties
+  - Linear regression gives single number predictions, not probability ranges (see confidence intervals for uncertainty range)
+  - Real climate is affected by policy changes, new technology, and natural variations not included in this model
+  - Users should interpret predictions as "if current trends continue" scenarios, not certainties
 
 * **Recommended Validation Path:**
   - IPCC Reports: Official consensus on climate science
@@ -478,15 +500,15 @@ All pages respect the sidebar filters:
 
 ### Heroku
 
-* The App live link is: https://YOUR_APP_NAME.herokuapp.com/
-* The project was deployed to Heroku using the following steps.
+* **Live App Link:** _To be added after deployment to Heroku_
+* **Deployment Steps:**
 
 1. Log in to Heroku and create an App
-2. At the Deploy tab, select GitHub as the deployment method.
-3. Select your repository name and click Search. Once it is found, click Connect.
-4. Select the branch you want to deploy, then click Deploy Branch.
-5. The deployment process should happen smoothly in case all deployment files are fully functional. Click now the button Open App on the top of the page to access your App.
-6. If the slug size is too large then add large or unnecessary files to .slugignore.
+2. At the Deploy tab, select GitHub as the deployment method
+3. Select your repository name and click Search. Once it is found, click Connect
+4. Select the branch you want to deploy, then click Deploy Branch
+5. The deployment process should happen smoothly if all deployment files are working correctly. Click the Open App button at the top of the page to access your app
+6. If the slug size is too large, add large or unnecessary files to .slugignore
 
 ## Main Data Analysis and Libraries
 

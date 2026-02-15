@@ -181,6 +181,10 @@ st.markdown(
     "interpretable baseline model to support discussion and planning."
 )
 
+# Initialize data variables to avoid unbound variable errors
+clean_df = pd.DataFrame()
+pred_df = pd.DataFrame()
+
 # Load data with error handling
 try:
     with st.spinner("Loading environmental data..."):

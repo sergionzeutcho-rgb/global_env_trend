@@ -1246,45 +1246,49 @@ elif st.session_state.current_page == "Comparison Tool":
     else:
         comparison_df = filtered_df[filtered_df["Country"].isin(comparison_countries)].copy()
         
-        # Latest values comparison
-        st.subheader("📊 Latest Year Comparison")
-        latest_year = comparison_df["Year"].max()
-        latest_data = comparison_df[comparison_df["Year"] == latest_year].sort_values("Country")
-        
-        metrics_to_compare = ["Avg_Temperature_degC", "CO2_Emissions_tons_per_capita", "Renewable_Energy_pct", "Extreme_Weather_Events"]
-        
-        for metric in metrics_to_compare:
-            fig = px.bar(
-                latest_data,
-                x="Country",
-                y=metric,
-                title=f"{metric.replace('_', ' ')} in {latest_year}",
+        if comparison_df.empty:
+            st.warning("⚠️ No data available for the selected countries in the current filter range.")
+            st.info("💡 Try expanding your year range or selecting different countries.")
+        else:
+            # Latest values comparison
+            st.subheader("📊 Latest Year Comparison")
+            latest_year = comparison_df["Year"].max()
+            latest_data = comparison_df[comparison_df["Year"] == latest_year].sort_values("Country")
+            
+            metrics_to_compare = ["Avg_Temperature_degC", "CO2_Emissions_tons_per_capita", "Renewable_Energy_pct", "Extreme_Weather_Events"]
+            
+            for metric in metrics_to_compare:
+                fig = px.bar(
+                    latest_data,
+                    x="Country",
+                    y=metric,
+                    title=f"{metric.replace('_', ' ')} in {latest_year}",
+                    color="Country",
+                    text_auto=True
+                )
+                st.plotly_chart(fig, use_container_width=True)
+            
+            # Trends comparison
+            st.subheader("📈 Trends Over Time")
+            metric_choice = st.selectbox("Select metric to track", metrics_to_compare)
+            
+            trend_fig = px.line(
+                comparison_df,
+                x="Year",
+                y=metric_choice,
                 color="Country",
-                text_auto=True
+                markers=True,
+                title=f"{metric_choice} Trends"
             )
-            st.plotly_chart(fig, use_container_width=True)
-        
-        # Trends comparison
-        st.subheader("📈 Trends Over Time")
-        metric_choice = st.selectbox("Select metric to track", metrics_to_compare)
-        
-        trend_fig = px.line(
-            comparison_df,
-            x="Year",
-            y=metric_choice,
-            color="Country",
-            markers=True,
-            title=f"{metric_choice} Trends"
-        )
-        st.plotly_chart(trend_fig, use_container_width=True)
-        
-        # Download comparison
-        st.download_button(
-            "📥 Download Comparison Data",
-            export_csv(latest_data),
-            "country_comparison.csv",
-            "text/csv"
-        )
+            st.plotly_chart(trend_fig, use_container_width=True)
+            
+            # Download comparison
+            st.download_button(
+                "📥 Download Comparison Data",
+                export_csv(latest_data),
+                "country_comparison.csv",
+                "text/csv"
+            )
 
 elif st.session_state.current_page == "Scenario Builder":
     st.subheader("⚙️ Scenario Builder")

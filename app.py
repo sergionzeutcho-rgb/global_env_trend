@@ -15,18 +15,30 @@ DATA_DIR = Path(__file__).parent / "data" / "processed" / "v1"
 CLEAN_PATH = DATA_DIR / "environmental_trends_clean.csv"
 PRED_PATH = DATA_DIR / "model_predictions.csv"
 
-st.set_page_config(page_title="Global Environmental Trends", layout="wide")
+st.set_page_config(
+    page_title="Global Environmental Trends Dashboard",
+    layout="wide",
+    initial_sidebar_state="expanded",
+    menu_items={
+        "About": "Global Environmental Trends 2000-2024 - Data Analytics Dashboard by Code Institute"
+    }
+)
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner="Loading dataset...")
 def load_clean_data() -> pd.DataFrame:
+    """Load cleaned environmental data with validation"""
+    if not CLEAN_PATH.exists():
+        st.error(f"❌ Data file not found: {CLEAN_PATH}. Please run notebook 01_data_ingestion_quality_checks.ipynb first.")
+        st.stop()
     df = pd.read_csv(CLEAN_PATH)
     df["Year"] = df["Year"].astype(int)
     return df
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner="Loading predictions...")
 def load_predictions() -> pd.DataFrame:
+    """Load model predictions with fallback support"""
     if PRED_PATH.exists():
         df = pd.read_csv(PRED_PATH)
         df["Year"] = df["Year"].astype(int)
@@ -225,12 +237,25 @@ if st.sidebar.button("🔄 Reset All Filters", help="Reset all filters to defaul
 all_countries = sorted(clean_df["Country"].unique().tolist())
 country_options = ["All"] + all_countries
 
-# Countries filter with tooltip
+# Countries filter with search capability
+st.sidebar.markdown("**📍 Countries** (Select or Search)")
+countries_search = st.sidebar.text_input(
+    "Search countries",
+    placeholder="e.g., United States, China...",
+    help="Type to filter country list",
+    label_visibility="collapsed"
+)
+if countries_search:
+    filtered_options = [c for c in country_options if countries_search.lower() in c.lower()]
+else:
+    filtered_options = country_options
+
 selected_countries = st.sidebar.multiselect(
-    "Countries",
-    country_options,
+    "Select countries",
+    filtered_options,
     default=["All"],
-    help="Select one or more countries to analyze. 'All' includes every country in the dataset."
+    help="Select one or more countries. 'All' includes every country in the dataset.",
+    label_visibility="collapsed"
 )
 if not selected_countries or "All" in selected_countries:
     selected_countries = all_countries
@@ -243,19 +268,20 @@ if "year_slider" not in st.session_state:
 
 # Year slider with tooltip
 year_range = st.sidebar.slider(
-    "Year range", 
+    "📅 Year range", 
     min_year, 
     max_year,
     value=(min_year, max_year),
     key="year_slider",
-    help="Filter data by time period"
+    help="Filter data by time period (2000-2024)"
 )
 
 # Technical notes toggle with tooltip
+st.sidebar.markdown("---")
 show_technical = st.sidebar.checkbox(
-    "Show technical notes", 
+    "🔬 Show technical notes", 
     value=False,
-    help="Toggle detailed statistical information and model metrics"
+    help="Toggle detailed statistical information, model metrics, and confidence intervals"
 )
 
 if show_technical:

@@ -251,9 +251,10 @@ Stakeholders have raw environmental data, but they need clear visualizations and
   - **Mitigation:** We note this explicitly in the dashboard and encourage users to view trends as "reported" events, not necessarily "actual" events
 
 * **Selection Bias:** Dataset covers only 19 countries, not globally representative:
-  - Over-representation of developed nations (10/19 = 53%)
-  - Under-representation of Africa (3/19) and Southeast Asia (3/19)
+  - Over-representation of developed nations (11/19 = 58%)
+  - Under-representation of Africa (2/19), Southeast Asia (1/19), and South America (1/19)
   - Island nations and small developing countries absent
+  - Regional bias: Europe (6/19 = 32%) and East Asia (3/19 = 16%) well-represented
   - **Impact:** Findings may not generalize to underrepresented regions
   - **Mitigation:** Results are clearly framed as "19-country analysis," not global
 

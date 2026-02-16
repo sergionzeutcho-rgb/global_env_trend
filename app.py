@@ -458,16 +458,16 @@ if st.session_state.current_page == "Executive Summary":
     renew_delta = summary_last["Renewable_Energy_pct"] - summary_first["Renewable_Energy_pct"]
     if renew_delta > 2:
         observations.append(
-            f"**🟢 Renewable energy is growing**: Renewable share has increased by {renew_delta:.2f}%. "
+            f"**⚡ Renewable energy is growing**: Renewable share has increased by {renew_delta:.2f}%. "
             "This indicates a transition toward cleaner energy sources."
         )
     elif renew_delta > 0:
         observations.append(
-            f"**🟡 Renewable energy is growing slowly**: Renewable share has increased by {renew_delta:.2f}%. "
+            f"**⚡ Renewable energy is growing slowly**: Renewable share has increased by {renew_delta:.2f}%. "
             "Accelerating the transition could help reduce emissions faster."
         )
     else:
-        observations.append("**🔴 Renewable energy share is declining**: Fossil fuels may be taking a larger share.")
+        observations.append("**⚡ Renewable energy share is declining**: Fossil fuels may be taking a larger share.")
     
     for obs in observations:
         st.markdown(obs)

@@ -296,6 +296,11 @@ if show_technical:
 
 with st.sidebar.expander("Recommendation thresholds", expanded=False):
     st.caption("Adjust thresholds for automatic recommendations")
+    st.info(
+        "💡 **What these do:** These thresholds control which countries appear in the "
+        "'Country-Specific Findings' table on the Executive Summary page. "
+        "Countries exceeding these thresholds get flagged with red/yellow warnings."
+    )
     temp_threshold = st.number_input(
         "Temp change (degC)", 
         value=0.5, min_value=0.0, step=0.1,
@@ -531,6 +536,13 @@ if st.session_state.current_page == "Executive Summary":
     st.markdown(
         "Below is a detailed breakdown by country showing where the biggest changes are happening. "
         "Use this to identify which countries face the greatest challenges or have the strongest progress."
+    )
+    
+    st.info(
+        "ℹ️ **How this works:** Countries are flagged based on the **Recommendation thresholds** set in the sidebar. "
+        f"Currently: Temperature change ≥ {temp_threshold}°C, CO₂ change ≥ {co2_threshold} tons, "
+        f"Renewables change ≥ {renew_threshold}%, Extreme events change ≥ {events_threshold}. "
+        "Adjust these values in the sidebar to customize which findings appear."
     )
     
     years_by_country = (

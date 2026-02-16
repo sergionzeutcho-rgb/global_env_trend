@@ -982,6 +982,37 @@ elif st.session_state.current_page == "Explore Patterns":
     st.plotly_chart(hist_fig, use_container_width=True)
     st.caption("📊 The bars show how many observations (country-year combinations) fall into each rainfall range.")
 
+    st.subheader("⛈️ Extreme Weather Events Over Time")
+    st.markdown(
+        "**What to look for:** Is the line going up, down, or staying flat? An upward trend means extreme weather events (hurricanes, floods, droughts, heatwaves) "
+        "are becoming more frequent. This directly relates to Hypothesis 3: that extreme events have increased from 2000 to 2024."
+    )
+    events_trend = filtered_df.groupby("Year", as_index=False)["Extreme_Weather_Events"].mean()
+    trend_fig = px.line(
+        events_trend,
+        x="Year",
+        y="Extreme_Weather_Events",
+        title="Average extreme weather events per year",
+        markers=True,
+    )
+    st.plotly_chart(trend_fig, use_container_width=True)
+    st.caption("⚠️ Note: Increasing trends may reflect both actual climate changes and improved monitoring/reporting systems over time.")
+
+    st.subheader("🌳 Forest Area vs. Extreme Weather Events")
+    st.markdown(
+        "**What to look for:** Does the scatter plot show a clear downward trend? That would suggest forests help reduce extreme weather. "
+        "If dots are scattered randomly, it means forest coverage alone doesn't strongly predict extreme weather events at the country level (Hypothesis 4)."
+    )
+    scatter_fig3 = px.scatter(
+        filtered_df,
+        x="Forest_Area_pct",
+        y="Extreme_Weather_Events",
+        color="Country",
+        title="Forest area vs extreme weather events",
+    )
+    st.plotly_chart(scatter_fig3, use_container_width=True)
+    st.caption("💡 Insight: Forests provide local benefits (soil stability, flood control) but don't significantly reduce country-level extreme weather event counts, which are influenced by global climate systems.")
+
     if show_technical:
         with st.expander("Interpretation guardrails"):
             st.write(

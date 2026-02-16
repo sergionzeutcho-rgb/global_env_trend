@@ -1016,7 +1016,7 @@ elif st.session_state.current_page == "Modeling & Prediction":
             st.caption("(Root Mean Squared Error) Penalizes large mistakes more. Another way to measure how far off predictions are.")
         with metric_cols[2]:
             st.metric("R² Score", f"{metrics['R2']:.3f}")
-        st.caption("How much variation the model explains. 1.0 = perfect; 0.5 = explains half; 0 = no better than guessing average.")
+            st.caption("How much variation the model explains. 1.0 = perfect; 0.5 = explains half; 0 = no better than guessing average.")
 
         st.info(
             "💡 **What this means:** These numbers tell you if the model is trustworthy. If R² > 0.6 and MAE is small, predictions are fairly reliable. "

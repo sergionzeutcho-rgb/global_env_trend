@@ -113,27 +113,20 @@ def get_country_emoji(country: str) -> str:
     return flags.get(country, "🌍")
 
 
-def get_trend_indicator(delta: float) -> str:
-    """Return trend emoji based on value change"""
-    if delta > 0.5:
-        return "📈 Rapidly increasing"
-    elif delta > 0:
-        return "📊 Increasing"
-    elif delta > -0.5:
-        return "📉 Decreasing"
-    else:
-        return "📉 Rapidly decreasing"
-
-
-def get_status_color(metric_name: str, value: float, direction: str) -> str:
-    """Get status indicator based on metric"""
-    if metric_name == "CO2_Emissions_tons_per_capita":
-        return "🔴" if value > 15 else "🟡" if value > 8 else "🟢"
-    elif metric_name == "Renewable_Energy_pct":
-        return "🟢" if value > 30 else "🟡" if value > 15 else "🔴"
-    elif metric_name == "Avg_Temperature_degC":
-        return "🔴" if value > 20 else "🟡" if value > 15 else "🟢"
-    return "⚪"
+# Humanized labels for Plotly axes and legends
+LABEL_MAP = {
+    "Avg_Temperature_degC": "Average Temperature (°C)",
+    "CO2_Emissions_tons_per_capita": "CO₂ Emissions (tons per capita)",
+    "Sea_Level_Rise_mm": "Sea Level Rise (mm)",
+    "Rainfall_mm": "Rainfall (mm)",
+    "Renewable_Energy_pct": "Renewable Energy (%)",
+    "Extreme_Weather_Events": "Extreme Weather Events",
+    "Forest_Area_pct": "Forest Area (%)",
+    "Population": "Population",
+    "Year": "Year",
+    "Country": "Country",
+    "Predicted_Avg_Temperature_degC": "Predicted Temperature (°C)",
+}
 
 
 @st.cache_data(show_spinner=False)
@@ -200,33 +193,31 @@ except Exception as e:
     st.info("💡 Please check that the data files exist in `data/processed/v1/` directory")
     st.stop()
 
+# Page navigation mapping: display label → page key
+PAGE_OPTIONS = [
+    ("📝 Executive Summary", "Executive Summary"),
+    ("📊 Data Overview", "Data Overview"),
+    ("📈 Overview", "Overview"),
+    ("🔍 Explore Patterns", "Explore Patterns"),
+    ("🤖 Modeling & Prediction", "Modeling & Prediction"),
+    ("📊 Analytics Hub", "Analytics Hub"),
+    ("🔄 Comparison Tool", "Comparison Tool"),
+    ("⚙️ Scenario Builder", "Scenario Builder"),
+]
+PAGE_LABELS = [label for label, _ in PAGE_OPTIONS]
+PAGE_KEYS = [key for _, key in PAGE_OPTIONS]
+LABEL_TO_KEY = dict(PAGE_OPTIONS)
+
+if "current_page" not in st.session_state:
+    st.session_state.current_page = "Executive Summary"
+
 st.sidebar.title("📋 Navigation")
 page = st.sidebar.radio(
     "Choose a section",
-    [
-        "📝 Executive Summary",
-        "📊 Data Overview",
-        "📈 Overview",
-        "🔍 Explore Patterns",
-        "🤖 Modeling & Prediction",
-        "📊 Analytics Hub",
-        "🔄 Comparison Tool",
-        "⚙️ Scenario Builder",
-    ],
-    index=[
-        "Executive Summary",
-        "Data Overview",
-        "Overview",
-        "Explore Patterns",
-        "Modeling & Prediction",
-        "Analytics Hub",
-        "Comparison Tool",
-        "Scenario Builder",
-    ].index(st.session_state.current_page if "current_page" in st.session_state else "Executive Summary"),
+    PAGE_LABELS,
+    index=PAGE_KEYS.index(st.session_state.current_page) if st.session_state.current_page in PAGE_KEYS else 0,
 )
-st.session_state.current_page = page.replace("📝 ", "").replace("📊 ", "").replace("📈 ", "").replace(
-    "🔍 ", ""
-).replace("🤖 ", "").replace("🔄 ", "").replace("⚙️ ", "")
+st.session_state.current_page = LABEL_TO_KEY.get(page, "Executive Summary")
 
 st.sidebar.markdown("---")
 
@@ -275,7 +266,6 @@ year_range = st.sidebar.slider(
     "📅 Year range", 
     min_year, 
     max_year,
-    value=(min_year, max_year),
     key="year_slider",
     help="Filter data by time period (2000-2024)"
 )
@@ -290,8 +280,7 @@ show_technical = st.sidebar.checkbox(
 
 if show_technical:
     st.sidebar.markdown(
-        "<span style='color:#1f77b4;font-weight:bold;'>Technical notes enabled</span> <span style='font-size: 0.85em;'>(shows on Overview, Explore Patterns, Modeling & Prediction)</span>",
-        unsafe_allow_html=True
+        "**Technical notes enabled** *(shows on Overview, Explore Patterns, Modeling & Prediction)*"
     )
 
 with st.sidebar.expander("Recommendation thresholds", expanded=False):
@@ -341,47 +330,6 @@ if filtered_df.empty:
     - Click **Reset All Filters** above to start over
     """)
     st.stop()
-
-st.markdown("### Quick guide")
-
-if "current_page" not in st.session_state:
-    st.session_state.current_page = "Executive Summary"
-
-nav_cols = st.columns(4)
-with nav_cols[0]:
-    if st.button("📝 Executive Summary", use_container_width=True):
-        st.session_state.current_page = "Executive Summary"
-        st.rerun()
-with nav_cols[1]:
-    if st.button("📊 Data Overview", use_container_width=True):
-        st.session_state.current_page = "Data Overview"
-        st.rerun()
-with nav_cols[2]:
-    if st.button("📈 Overview", use_container_width=True):
-        st.session_state.current_page = "Overview"
-        st.rerun()
-with nav_cols[3]:
-    if st.button("🔍 Explore Patterns", use_container_width=True):
-        st.session_state.current_page = "Explore Patterns"
-        st.rerun()
-
-nav_cols2 = st.columns(4)
-with nav_cols2[0]:
-    if st.button("🤖 Modeling & Prediction", use_container_width=True):
-        st.session_state.current_page = "Modeling & Prediction"
-        st.rerun()
-with nav_cols2[1]:
-    if st.button("📊 Analytics Hub", use_container_width=True):
-        st.session_state.current_page = "Analytics Hub"
-        st.rerun()
-with nav_cols2[2]:
-    if st.button("🔄 Comparison Tool", use_container_width=True):
-        st.session_state.current_page = "Comparison Tool"
-        st.rerun()
-with nav_cols2[3]:
-    if st.button("⚙️ Scenario Builder", use_container_width=True):
-        st.session_state.current_page = "Scenario Builder"
-        st.rerun()
 
 st.markdown("---")
 
@@ -599,7 +547,6 @@ if st.session_state.current_page == "Executive Summary":
     deltas["events_delta"] = deltas["events_last"] - deltas["events_first"]
 
     rec_rows = []
-    status_rows = []
     
     for _, row in deltas.iterrows():
         country_recs = []
@@ -863,6 +810,7 @@ elif st.session_state.current_page == "Overview":
         y="Avg_Temperature_degC",
         title="Average temperature by year",
         markers=True,
+        labels=LABEL_MAP,
     )
     st.plotly_chart(line_fig, use_container_width=True)
 
@@ -880,6 +828,7 @@ elif st.session_state.current_page == "Overview":
         y="Country",
         orientation="h",
         title=f"Top 10 countries by extreme weather events in {latest_year}",
+        labels=LABEL_MAP,
     )
     st.plotly_chart(bar_fig, use_container_width=True)
 
@@ -949,6 +898,7 @@ elif st.session_state.current_page == "Explore Patterns":
         y="Avg_Temperature_degC",
         color="Country",
         title="CO2 emissions per capita vs average temperature",
+        labels=LABEL_MAP,
     )
     st.plotly_chart(scatter_fig, use_container_width=True)
     st.caption("⚠️ Note: Countries with different sizes and industries will have different patterns. This doesn't prove causation—just shows association.")
@@ -964,6 +914,7 @@ elif st.session_state.current_page == "Explore Patterns":
         y="CO2_Emissions_tons_per_capita",
         color="Country",
         title="Renewable energy share vs CO2 emissions per capita",
+        labels=LABEL_MAP,
     )
     st.plotly_chart(scatter_fig2, use_container_width=True)
     st.caption("💡 Tip: Countries that invested in renewables earlier tend to have lower current emissions.")
@@ -978,6 +929,7 @@ elif st.session_state.current_page == "Explore Patterns":
         x="Rainfall_mm",
         nbins=20,
         title="Rainfall distribution across selected countries and years",
+        labels=LABEL_MAP,
     )
     st.plotly_chart(hist_fig, use_container_width=True)
     st.caption("📊 The bars show how many observations (country-year combinations) fall into each rainfall range.")
@@ -994,6 +946,7 @@ elif st.session_state.current_page == "Explore Patterns":
         y="Extreme_Weather_Events",
         title="Average extreme weather events per year",
         markers=True,
+        labels=LABEL_MAP,
     )
     st.plotly_chart(trend_fig, use_container_width=True)
     st.caption("⚠️ Note: Increasing trends may reflect both actual climate changes and improved monitoring/reporting systems over time.")
@@ -1009,6 +962,7 @@ elif st.session_state.current_page == "Explore Patterns":
         y="Extreme_Weather_Events",
         color="Country",
         title="Forest area vs extreme weather events",
+        labels=LABEL_MAP,
     )
     st.plotly_chart(scatter_fig3, use_container_width=True)
     st.caption("💡 Insight: Forests provide local benefits (soil stability, flood control) but don't significantly reduce country-level extreme weather event counts, which are influenced by global climate systems.")
@@ -1027,7 +981,7 @@ elif st.session_state.current_page == "Modeling & Prediction":
         "It splits data into a training period (to learn) and a test period (to verify). The goal is clarity over precision."
     )
 
-    train_df, test_df = time_aware_split(filtered_df)
+    train_df, test_df = time_aware_split(clean_df)
     X_train, y_train = build_features(train_df)
     X_test, y_test = build_features(test_df)
 
@@ -1083,6 +1037,7 @@ elif st.session_state.current_page == "Modeling & Prediction":
                 y="Predicted_Avg_Temperature_degC",
                 color="Country",
                 title="Projected temperature (2025+)",
+                labels=LABEL_MAP,
             )
             st.plotly_chart(pred_fig, use_container_width=True)
             st.caption("⚠️ **Important:** These are based on past trends. They assume nothing changes. Real futures depend on policy, technology, and behavior.")
@@ -1105,7 +1060,7 @@ elif st.session_state.current_page == "Modeling & Prediction":
         "All fields use recent actual values as defaults—change them to explore different scenarios."
     )
 
-    full_X, full_y = build_features(filtered_df)
+    full_X, full_y = build_features(clean_df)
     model_ready = False
     if full_y is not None and full_X is not None:
         full_model = LinearRegression()
@@ -1133,38 +1088,47 @@ elif st.session_state.current_page == "Modeling & Prediction":
         pred_co2 = st.number_input(
             "🏭 CO2 emissions per capita (tons)",
             value=float(default_row["CO2_Emissions_tons_per_capita"]),
+            min_value=0.0,
             help="Higher = more emissions from energy, transport, industry. Try reducing this to see how important it is."
         )
         pred_sea = st.number_input(
             "🌊 Sea level rise (mm)",
             value=float(default_row["Sea_Level_Rise_mm"]),
+            min_value=0.0,
             help="How much ocean levels are rising. Related to warming; higher values = more climate change impact."
         )
         pred_rain = st.number_input(
             "🌧️ Rainfall (mm)",
             value=float(default_row["Rainfall_mm"]),
+            min_value=0.0,
             help="Annual rainfall. Major droughts have low values (~200mm); wet regions have 2000mm+."
         )
         pred_pop = st.number_input(
             "👥 Population",
             value=float(default_row["Population"]),
+            min_value=0.0,
             step=1.0,
             help="Total population. Larger populations typically consume more energy and emit more."
         )
         pred_renew = st.number_input(
             "⚡ Renewable energy (%)",
             value=float(default_row["Renewable_Energy_pct"]),
+            min_value=0.0,
+            max_value=100.0,
             help="0% = all fossil fuels; 100% = all renewables. Try increasing this to reduce emissions."
         )
         pred_events = st.number_input(
             "⛈️ Extreme weather events",
             value=float(default_row["Extreme_Weather_Events"]),
+            min_value=0.0,
             step=1.0,
             help="Count of hurricanes, floods, heatwaves, etc. More events = sign of climate instability."
         )
         pred_forest = st.number_input(
             "🌳 Forest area (%)",
             value=float(default_row["Forest_Area_pct"]),
+            min_value=0.0,
+            max_value=100.0,
             help="0% = no forests; 100% = completely forested. Forests absorb CO2 and regulate climate."
         )
         submitted = st.form_submit_button("🔮 Predict temperature")
@@ -1220,7 +1184,13 @@ elif st.session_state.current_page == "Analytics Hub":
         duplicates = clean_df.duplicated().sum()
         st.metric("Unique Records", f"{(1 - duplicates/len(clean_df))*100:.2f}%")
     
-    st.info(f"✅ **Data last updated:** {datetime.now().strftime('%B %d, %Y at %I:%M %p')}")
+    import os as _os
+    _file_mtime = _os.path.getmtime(CLEAN_PATH) if CLEAN_PATH.exists() else None
+    if _file_mtime:
+        from datetime import datetime as _dt
+        st.info(f"✅ **Data last updated:** {_dt.fromtimestamp(_file_mtime).strftime('%B %d, %Y at %I:%M %p')}")
+    else:
+        st.info("✅ **Data last updated:** Unknown")
     
     # Correlation Heatmap
     st.markdown("---")
@@ -1305,9 +1275,10 @@ elif st.session_state.current_page == "Comparison Tool":
                     latest_data,
                     x="Country",
                     y=metric,
-                    title=f"{metric.replace('_', ' ')} in {latest_year}",
+                    title=f"{LABEL_MAP.get(metric, metric.replace('_', ' '))} in {latest_year}",
                     color="Country",
-                    text_auto=True
+                    text_auto=True,
+                    labels=LABEL_MAP,
                 )
                 st.plotly_chart(fig, use_container_width=True)
             
@@ -1321,7 +1292,8 @@ elif st.session_state.current_page == "Comparison Tool":
                 y=metric_choice,
                 color="Country",
                 markers=True,
-                title=f"{metric_choice} Trends"
+                title=f"{LABEL_MAP.get(metric_choice, metric_choice)} trends",
+                labels=LABEL_MAP,
             )
             st.plotly_chart(trend_fig, use_container_width=True)
             
@@ -1346,13 +1318,13 @@ elif st.session_state.current_page == "Scenario Builder":
         "Use this for educational exploration and understanding factor relationships, not for policy decisions."
     )
     
-    # Train model for scenario predictions
-    full_X_scenario, full_y_scenario = build_features(filtered_df)
+    # Train model for scenario predictions (use full dataset for stable encoding)
+    full_X_scenario, full_y_scenario = build_features(clean_df)
     scenario_ready = False
-    full_model = None
+    scenario_model = None
     if full_y_scenario is not None and full_X_scenario is not None:
-        full_model = LinearRegression()
-        full_model.fit(full_X_scenario, full_y_scenario)
+        scenario_model = LinearRegression()
+        scenario_model.fit(full_X_scenario, full_y_scenario)
         scenario_ready = True
     else:
         st.warning("⚠️ Unable to build model for scenarios - insufficient data. Please check your filters.")
@@ -1414,7 +1386,7 @@ elif st.session_state.current_page == "Scenario Builder":
             )
         
         if st.button("🚀 Run Scenario"):
-            if full_model is None:
+            if scenario_model is None:
                 st.error("Model not available. Please check your data filters.")
             else:
                 # Get current baseline
@@ -1438,13 +1410,13 @@ elif st.session_state.current_page == "Scenario Builder":
                 
                 scenario_X, _ = build_features(scenario_df, include_target=False)
                 scenario_X = align_features(scenario_X, full_X_scenario.columns.tolist())
-                pred_temp = full_model.predict(scenario_X)[0]
+                pred_temp = scenario_model.predict(scenario_X)[0]
                 
                 # Baseline prediction
                 baseline_data = filtered_df[filtered_df["Year"] == filtered_df["Year"].max()].iloc[0].to_dict()
                 baseline_X, _ = build_features(pd.DataFrame([baseline_data]), include_target=False)
                 baseline_X = align_features(baseline_X, full_X_scenario.columns.tolist())
-                baseline_temp = full_model.predict(baseline_X)[0]
+                baseline_temp = scenario_model.predict(baseline_X)[0]
                 
                 temp_diff = pred_temp - baseline_temp
                 

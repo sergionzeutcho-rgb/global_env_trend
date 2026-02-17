@@ -423,7 +423,7 @@ global_env_trend/
 
 ## Unfixed Bugs
 
-* No bugs to report
+* **Streamlit `year_slider` deprecation warning** – When no session state exists for the slider on first load, Streamlit may emit a warning about conflicting `value` and `key` arguments. This does not affect functionality and will be resolved by a future Streamlit release.
 
 ## Prerequisites
 
@@ -522,17 +522,16 @@ All pages respect the sidebar filters:
 * **Seaborn** (version 0.13.2) - Used to display correlation heatmaps and enhanced statistical plots with improved aesthetics
 * **Plotly** (version 5.17.0) - Used to display interactive visualizations in the Streamlit dashboard including line charts, scatter plots, and bar charts with hover tooltips
 * **Streamlit** (version 1.40.2) - Used as the dashboard framework to create an interactive web application for stakeholder exploration
-* **feature-engine** (version 1.6.1) - Used for feature engineering tasks in the ML pipeline such as handling missing values and feature transformations
-* **imbalanced-learn** (version 0.11.0) - Used for handling class imbalance in predictive modeling if needed
 * **scikit-learn** (version 1.3.1) - Used for machine learning model development including LinearRegression, train-test splitting, and performance metrics (MAE, RMSE, R²)
-* **XGBoost** (version 1.7.6) - Alternative gradient boosting library available for more complex modeling approaches if needed
+* **SciPy** (version 1.11.3) - Used for statistical hypothesis testing including Pearson/Spearman correlations and linear regression slope tests
 
 ### Development Libraries (used in notebooks only)
 
 * **ydata-profiling** (version 4.12.0) - Used to generate comprehensive exploratory data analysis (EDA) reports in the jupyter notebooks
 * **ppscore** (version 1.1.0) - Used in jupyter notebooks to calculate Predictive Power Score and understand better how features and target interact with each other
 * **Yellowbrick** (version 1.5) - Used for machine learning visualization including model performance diagnostics and feature importance plots
-* **Pillow** (version 10.0.1) - Used for image processing and display in the dashboard if needed
+
+> **Note:** Development libraries are not included in `requirements.txt` and are only needed when running the Jupyter notebooks locally. Install them separately with `pip install ydata-profiling ppscore yellowbrick` if needed.
 
 ## Credits
 

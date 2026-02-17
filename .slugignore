@@ -1,2 +1,4 @@
 jupyter_notebooks/*
+raw_dataset/*
+data/raw/*
 README.md

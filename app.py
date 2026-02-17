@@ -180,11 +180,8 @@ def get_data_quality_score(df: pd.DataFrame) -> float:
     return min(100, completeness + uniqueness)
 
 
-st.title("Global Environmental Trends (2000-2024)")
-st.markdown(
-    "This dashboard summarizes climate-related signals from 2000-2024 and provides an "
-    "interpretable baseline model to support discussion and planning."
-)
+st.markdown("""<h1 style='margin-bottom:0'>🌍 Global Environmental Trends (2000–2024)</h1>""", unsafe_allow_html=True)
+st.caption("Climate-related signals from 2000–2024 • Interpretable baseline model • Built for discussion & planning")
 
 # Initialize data variables to avoid unbound variable errors
 clean_df = pd.DataFrame()
@@ -343,21 +340,28 @@ if filtered_df.empty:
     """)
     st.stop()
 
+# ── Global quick-access navigation (visible on every page) ──
+nav_icons = {
+    "Executive Summary": "📝", "Data Overview": "📊", "Overview": "📈",
+    "Explore Patterns": "🔍", "Modeling & Prediction": "🤖",
+    "Analytics Hub": "📊", "Comparison Tool": "🔄", "Scenario Builder": "⚙️",
+}
+nav_cols = st.columns(len(PAGE_OPTIONS))
+for i, (label, key) in enumerate(PAGE_OPTIONS):
+    icon = nav_icons.get(key, "")
+    is_active = st.session_state.current_page == key
+    btn_label = f"{icon} {key}"
+    if nav_cols[i].button(
+        btn_label, key=f"topnav_{key}", use_container_width=True,
+        type="primary" if is_active else "secondary",
+    ):
+        st.session_state.current_page = key
+        st.rerun()
+
 st.markdown("---")
 
 if st.session_state.current_page == "Executive Summary":
-    st.subheader("Executive summary")
-
-    # Quick-access navigation bar
-    st.markdown("**Quick navigation:**")
-    nav_cols = st.columns(7)
-    nav_pages = ["Data Overview", "Overview", "Explore Patterns", "Modeling & Prediction",
-                 "Analytics Hub", "Comparison Tool", "Scenario Builder"]
-    for i, page in enumerate(nav_pages):
-        if nav_cols[i].button(page, key=f"nav_{page}", use_container_width=True):
-            st.session_state.current_page = page
-            st.rerun()
-    st.markdown("---")
+    st.subheader("📝 Executive Summary")
 
     st.markdown(
         "📌 **What you're seeing:** This summary shows the key environmental trends over the selected "
@@ -626,9 +630,9 @@ if st.session_state.current_page == "Executive Summary":
         st.info("No countries exceeded the selected thresholds. Adjust threshold values in the Filters sidebar to see recommendations.")
 
 elif st.session_state.current_page == "Data Overview":
-    st.subheader("Data overview")
+    st.subheader("📊 Data Overview")
     st.write(
-        "Outcome: a quick, plain-language view of what data is available and what each metric means."
+        "A quick, plain-language view of what data is available, how it was cleaned, and what each metric means."
     )
 
     data_cols = st.columns(4)
@@ -705,7 +709,7 @@ elif st.session_state.current_page == "Data Overview":
 
     st.markdown("---")
 
-    st.subheader("Data quality assessment")
+    st.subheader("✅ Data Quality Assessment")
     st.markdown(
         "The dataset was cleaned in **Notebook 01** using a 5-step process: "
         "(1) Duplicate Country-Year rows removed, "
@@ -743,7 +747,7 @@ elif st.session_state.current_page == "Data Overview":
 
     st.markdown("---")
 
-    st.subheader("Key fields")
+    st.subheader("📖 Key Fields")
     st.markdown("**Glossary:** Definitions and context for each metric")
 
     glossary_data = {
@@ -789,7 +793,7 @@ elif st.session_state.current_page == "Data Overview":
 
     st.markdown("---")
 
-    st.subheader("Sample data")
+    st.subheader("🗂️ Sample Data")
     st.markdown("**First 10 records from the dataset:**")
     display_df = clean_df.head(10).copy()
     display_df["Year"] = display_df["Year"].astype(int)
@@ -844,9 +848,9 @@ elif st.session_state.current_page == "Data Overview":
         )
 
 elif st.session_state.current_page == "Overview":
-    st.subheader("Key signals")
+    st.subheader("📈 Overview — Key Signals")
     st.write(
-        "📊 **What you'll see:** How temperature, emissions, and renewable energy change over time across selected countries. "
+        "How temperature, emissions, and renewable energy change over time across selected countries. "
         "This gives you a quick snapshot before diving deeper into patterns and predictions."
     )
 
@@ -978,9 +982,9 @@ elif st.session_state.current_page == "Overview":
             )
 
 elif st.session_state.current_page == "Explore Patterns":
-    st.subheader("What to look for")
+    st.subheader("🔍 Explore Patterns")
     st.write(
-        "🔎 **Purpose:** Find relationships between different metrics. If two things move together, it might mean one influences the other—or they might both be influenced by something else. "
+        "Find relationships between different metrics. If two things move together, it might mean one influences the other—or they might both be influenced by something else. "
         "These patterns are clues for deeper investigation, not proof of cause-and-effect."
     )
 
@@ -1411,9 +1415,9 @@ elif st.session_state.current_page == "Modeling & Prediction":
         )
 
 elif st.session_state.current_page == "Analytics Hub":
-    st.subheader("📊 Advanced Analytics Hub")
+    st.subheader("📊 Analytics Hub")
     st.write(
-        "🔬 **Purpose:** Dive deep into data relationships, quality metrics, and advanced analysis. "
+        "🔬 Dive deep into data relationships, quality metrics, and advanced analysis. "
         "Use these tools to understand patterns and anomalies."
     )
     
@@ -1491,7 +1495,7 @@ elif st.session_state.current_page == "Analytics Hub":
 elif st.session_state.current_page == "Comparison Tool":
     st.subheader("🔄 Country Comparison Tool")
     st.write(
-        "📊 **Purpose:** Compare environmental metrics side-by-side across countries. "
+        "Compare environmental metrics side-by-side across countries. "
         "Identify leaders and laggards in climate action."
     )
     
@@ -1556,7 +1560,7 @@ elif st.session_state.current_page == "Comparison Tool":
 elif st.session_state.current_page == "Scenario Builder":
     st.subheader("⚙️ Scenario Builder")
     st.write(
-        "🎯 **Purpose:** Create 'what-if' scenarios to explore how environmental factors correlate with temperature. "
+        "Create 'what-if' scenarios to explore how environmental factors correlate with temperature. "
         "Adjust multiple indicators to see their combined effect on temperature estimates."
     )
     

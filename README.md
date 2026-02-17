@@ -400,24 +400,24 @@ global_env_trend/
 **The notebooks must be run in sequence:**
 
 1. **01_data_ingestion_quality_checks.ipynb**
-   - Purpose: Load raw data, check quality, clean, and export
+   - Purpose: Load raw data, perform quality checks, clean (remove duplicates, impute missing values, validate types and ranges), and export a versioned clean dataset
    - Inputs: `data/raw/v1/environmental_trends.csv`
    - Outputs: `data/processed/v1/environmental_trends_clean.csv`
 
 2. **02_eda_descriptive_stats.ipynb**
-   - Purpose: Explore data, generate summary statistics, create visualizations
+   - Purpose: Explore data with summary statistics, histograms, box plots by country, temperature trend charts, and an annotated correlation heatmap
    - Inputs: `data/processed/v1/environmental_trends_clean.csv`
-   - Outputs: EDA insights and plots
+   - Outputs: EDA insights and plots (embedded in notebook)
 
 3. **03_hypothesis_testing.ipynb**
-   - Purpose: Test all 4 hypotheses using correlation and trend analysis
+   - Purpose: Test all 4 hypotheses using Pearson/Spearman correlations and linear regression slope tests (via scipy.stats), with scatter plots and a summary table including p-values and Bonferroni correction note
    - Inputs: `data/processed/v1/environmental_trends_clean.csv`
-   - Outputs: Hypothesis validation results
+   - Outputs: Hypothesis validation results with plain-language interpretations
 
 4. **04_predictive_modeling.ipynb**
-   - Purpose: Train temperature forecasting model, generate predictions
+   - Purpose: Train per-country linear regression models, evaluate with time-aware splits (MAE, RMSE, R²), generate 2025–2029 forecasts, and compute 95% bootstrap confidence intervals for all countries
    - Inputs: `data/processed/v1/environmental_trends_clean.csv`
-   - Outputs: `data/processed/v1/model_predictions.csv`, `data/processed/v1/model_predictions_with_ci.csv`
+   - Outputs: `data/processed/v1/model_predictions.csv` (point forecasts), `data/processed/v1/model_predictions_with_ci.csv` (forecasts with 95% confidence intervals)
 
 **Note:** Notebook 1 must be run first as it creates the clean dataset used by all others. Notebook 4 should be run last as it generates the predictions displayed in the dashboard.
 

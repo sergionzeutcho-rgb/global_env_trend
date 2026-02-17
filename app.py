@@ -617,6 +617,14 @@ elif st.session_state.current_page == "Data Overview":
     st.markdown("---")
 
     st.subheader("Data quality assessment")
+    st.markdown(
+        "The dataset was cleaned in **Notebook 01** using a 5-step process: "
+        "(1) Duplicate Country-Year rows removed, "
+        "(2) Rows with missing temperature dropped, "
+        "(3) Remaining missing numeric values filled with country-level medians, "
+        "(4) Data types validated (Year and Population as integers), "
+        "(5) All numeric columns checked against expected value ranges."
+    )
     col1, col2, col3 = st.columns(3)
     with col1:
         missing_count = clean_df.isnull().sum().sum()
@@ -901,7 +909,13 @@ elif st.session_state.current_page == "Explore Patterns":
         labels=LABEL_MAP,
     )
     st.plotly_chart(scatter_fig, use_container_width=True)
-    st.caption("⚠️ Note: Countries with different sizes and industries will have different patterns. This doesn't prove causation—just shows association.")
+    st.caption(
+        "⚠️ Note: Countries with different sizes and industries will have different patterns. "
+        "This doesn't prove causation—just shows association.\n\n"
+        "📊 **Hypothesis H1 result (from Notebook 03):** The Pearson correlation between CO2 emissions and temperature "
+        "was found to be **moderately negative**, which is the opposite of what we expected. This happens because cold-climate "
+        "industrial countries (e.g. Russia, Canada) have both high emissions and low temperatures. Geographic differences confound the relationship."
+    )
 
     st.subheader("⚡ Renewable Energy vs. Emissions")
     st.markdown(
@@ -917,7 +931,11 @@ elif st.session_state.current_page == "Explore Patterns":
         labels=LABEL_MAP,
     )
     st.plotly_chart(scatter_fig2, use_container_width=True)
-    st.caption("💡 Tip: Countries that invested in renewables earlier tend to have lower current emissions.")
+    st.caption(
+        "💡 Tip: Countries that invested in renewables earlier tend to have lower current emissions.\n\n"
+        "📊 **Hypothesis H2 result (from Notebook 03):** The Pearson correlation between renewable energy share and CO2 emissions "
+        "is **moderately negative**, supporting the hypothesis that higher renewables are associated with lower emissions."
+    )
 
     st.subheader("🌧️ Rainfall Patterns")
     st.markdown(
@@ -949,7 +967,11 @@ elif st.session_state.current_page == "Explore Patterns":
         labels=LABEL_MAP,
     )
     st.plotly_chart(trend_fig, use_container_width=True)
-    st.caption("⚠️ Note: Increasing trends may reflect both actual climate changes and improved monitoring/reporting systems over time.")
+    st.caption(
+        "⚠️ Note: Increasing trends may reflect both actual climate changes and improved monitoring/reporting systems over time.\n\n"
+        "📊 **Hypothesis H3 result (from Notebook 03):** A linear regression of extreme events over time shows an **upward slope**, "
+        "indicating that extreme weather events have generally increased from 2000 to 2024."
+    )
 
     st.subheader("🌳 Forest Area vs. Extreme Weather Events")
     st.markdown(
@@ -965,7 +987,12 @@ elif st.session_state.current_page == "Explore Patterns":
         labels=LABEL_MAP,
     )
     st.plotly_chart(scatter_fig3, use_container_width=True)
-    st.caption("💡 Insight: Forests provide local benefits (soil stability, flood control) but don't significantly reduce country-level extreme weather event counts, which are influenced by global climate systems.")
+    st.caption(
+        "💡 Insight: Forests provide local benefits (soil stability, flood control) but don't significantly reduce "
+        "country-level extreme weather event counts, which are influenced by global climate systems.\n\n"
+        "📊 **Hypothesis H4 result (from Notebook 03):** The Pearson correlation between forest area and extreme events "
+        "is **weak**, confirming that forest coverage alone is not a strong predictor of extreme weather at the national level."
+    )
 
     if show_technical:
         with st.expander("Interpretation guardrails"):
@@ -1041,6 +1068,12 @@ elif st.session_state.current_page == "Modeling & Prediction":
             )
             st.plotly_chart(pred_fig, use_container_width=True)
             st.caption("⚠️ **Important:** These are based on past trends. They assume nothing changes. Real futures depend on policy, technology, and behavior.")
+            st.info(
+                "📊 **Confidence intervals** for these forecasts are available in the exported file "
+                "`model_predictions_with_ci.csv` (generated in Notebook 04). The 95% confidence intervals "
+                "show the range within which the true temperature is likely to fall, providing a visual "
+                "sense of forecast uncertainty."
+            )
 
     if show_technical:
         with st.expander("Forecast limitations"):

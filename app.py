@@ -8,12 +8,14 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
+from scipy import stats
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 DATA_DIR = Path(__file__).parent / "data" / "processed" / "v1"
 CLEAN_PATH = DATA_DIR / "environmental_trends_clean.csv"
 PRED_PATH = DATA_DIR / "model_predictions.csv"
+CI_PATH = DATA_DIR / "model_predictions_with_ci.csv"
 
 st.set_page_config(
     page_title="Global Environmental Trends Dashboard",
@@ -44,6 +46,16 @@ def load_predictions() -> pd.DataFrame:
         df["Year"] = df["Year"].astype(int)
         return df
     return pd.DataFrame(columns=["Year", "Country", "Predicted_Avg_Temperature_degC"])
+
+
+@st.cache_data(show_spinner="Loading confidence intervals...")
+def load_ci_predictions() -> pd.DataFrame:
+    """Load model predictions with bootstrap confidence intervals"""
+    if CI_PATH.exists():
+        df = pd.read_csv(CI_PATH)
+        df["Year"] = df["Year"].astype(int)
+        return df
+    return pd.DataFrame()
 
 
 def filter_data(df: pd.DataFrame, countries: list[str], year_range: tuple[int, int]) -> pd.DataFrame:
@@ -335,7 +347,18 @@ st.markdown("---")
 
 if st.session_state.current_page == "Executive Summary":
     st.subheader("Executive summary")
-    
+
+    # Quick-access navigation bar
+    st.markdown("**Quick navigation:**")
+    nav_cols = st.columns(7)
+    nav_pages = ["Data Overview", "Overview", "Explore Patterns", "Modeling & Prediction",
+                 "Analytics Hub", "Comparison Tool", "Scenario Builder"]
+    for i, page in enumerate(nav_pages):
+        if nav_cols[i].button(page, key=f"nav_{page}", use_container_width=True):
+            st.session_state.current_page = page
+            st.rerun()
+    st.markdown("---")
+
     st.markdown(
         "📌 **What you're seeing:** This summary shows the key environmental trends over the selected "
         "period, how they have changed, and what actions may be worth considering.\n\n"
@@ -613,6 +636,72 @@ elif st.session_state.current_page == "Data Overview":
     data_cols[1].metric("Years", f"{clean_df['Year'].nunique()}")
     data_cols[2].metric("Records", f"{len(clean_df)}")
     data_cols[3].metric("Metrics", "8 indicators")
+
+    st.markdown("---")
+
+    st.subheader("📊 Descriptive Statistics")
+    st.markdown(
+        "**What this shows:** A statistical summary of each numeric variable across all countries and years. "
+        "This comes from **Notebook 02** (EDA). The mean is the average, std shows how spread out values are, "
+        "and the quartiles (25%, 50%, 75%) show how the data is distributed."
+    )
+    numeric_cols_desc = ["Avg_Temperature_degC", "CO2_Emissions_tons_per_capita", "Sea_Level_Rise_mm",
+                         "Rainfall_mm", "Renewable_Energy_pct", "Extreme_Weather_Events", "Forest_Area_pct"]
+    desc_df = clean_df[numeric_cols_desc].describe().T
+    desc_df.columns = ["Count", "Mean", "Std Dev", "Min", "25%", "Median", "75%", "Max"]
+    st.dataframe(desc_df.round(2), use_container_width=True)
+    st.caption(
+        "💡 **Reading guide:** High 'Std Dev' means the variable varies a lot across countries. "
+        "Compare 'Min' and 'Max' to see the full range. If Mean ≠ Median, the distribution is skewed."
+    )
+
+    st.markdown("---")
+
+    st.subheader("📊 Variable Distributions (Histograms)")
+    st.markdown(
+        "**What this shows:** How each environmental variable is spread across all country-year records. "
+        "These histograms come from **Notebook 02**. Symmetric shapes mean most values cluster around the middle; "
+        "skewed shapes mean some records are much higher or lower than typical."
+    )
+    hist_cols_list = ["Avg_Temperature_degC", "CO2_Emissions_tons_per_capita", "Sea_Level_Rise_mm",
+                      "Rainfall_mm", "Renewable_Energy_pct", "Extreme_Weather_Events", "Forest_Area_pct"]
+    for col_name in hist_cols_list:
+        if col_name in clean_df.columns:
+            hist_fig = px.histogram(
+                clean_df, x=col_name, nbins=20,
+                title=LABEL_MAP.get(col_name, col_name),
+                labels=LABEL_MAP,
+            )
+            hist_fig.update_layout(height=300, margin=dict(t=40, b=20))
+            st.plotly_chart(hist_fig, use_container_width=True)
+    st.caption(
+        "💡 **Interpretation:** Skewed distributions (long tail to one side) are common for emissions and population. "
+        "Temperature tends to be more symmetric. Wide spread means large differences between countries."
+    )
+
+    st.markdown("---")
+
+    st.subheader("📦 Box Plots by Country")
+    st.markdown(
+        "**What this shows:** The range of values for key metrics broken down by country (from **Notebook 02**). "
+        "The box covers the middle 50%%; the line inside is the median. Dots outside the whiskers are outliers."
+    )
+    box_metrics = ["Avg_Temperature_degC", "CO2_Emissions_tons_per_capita",
+                   "Renewable_Energy_pct", "Extreme_Weather_Events"]
+    for bm in box_metrics:
+        if bm in clean_df.columns:
+            box_fig = px.box(
+                clean_df, x="Country", y=bm,
+                title=f"{LABEL_MAP.get(bm, bm)} by Country",
+                labels=LABEL_MAP,
+            )
+            box_fig.update_layout(height=400, xaxis_tickangle=-45)
+            st.plotly_chart(box_fig, use_container_width=True)
+    st.caption(
+        "💡 **Key takeaway:** Wide boxes mean high variability within that country over time. "
+        "CO2 emissions and renewable energy show the biggest differences between nations, reflecting "
+        "different development levels and energy policies."
+    )
 
     st.markdown("---")
 
@@ -994,6 +1083,59 @@ elif st.session_state.current_page == "Explore Patterns":
         "is **weak**, confirming that forest coverage alone is not a strong predictor of extreme weather at the national level."
     )
 
+    # ── Hypothesis Summary Table (from Notebook 03) ──
+    st.markdown("---")
+    st.subheader("📋 Hypothesis Test Summary")
+    st.markdown(
+        "**What this table shows:** The statistical results from all four hypothesis tests performed in **Notebook 03**. "
+        "Pearson r measures the strength and direction of the relationship (-1 to +1). "
+        "A p-value below 0.05 means the result is unlikely due to chance."
+    )
+
+    h_results = []
+    # H1
+    h1_data = clean_df.dropna(subset=["CO2_Emissions_tons_per_capita", "Avg_Temperature_degC"])
+    h1_r, h1_p = stats.pearsonr(h1_data["CO2_Emissions_tons_per_capita"], h1_data["Avg_Temperature_degC"])
+    h_results.append({"Hypothesis": "H1: CO₂ vs Temperature", "Pearson r": f"{h1_r:.3f}",
+                      "p-value": f"{h1_p:.4e}", "Significant (p<0.05)": "Yes" if h1_p < 0.05 else "No",
+                      "Direction": "Negative" if h1_r < 0 else "Positive",
+                      "Strength": "Strong" if abs(h1_r) > 0.7 else "Moderate" if abs(h1_r) > 0.3 else "Weak"})
+    # H2
+    h2_data = clean_df.dropna(subset=["Renewable_Energy_pct", "CO2_Emissions_tons_per_capita"])
+    h2_r, h2_p = stats.pearsonr(h2_data["Renewable_Energy_pct"], h2_data["CO2_Emissions_tons_per_capita"])
+    h_results.append({"Hypothesis": "H2: Renewables vs CO₂", "Pearson r": f"{h2_r:.3f}",
+                      "p-value": f"{h2_p:.4e}", "Significant (p<0.05)": "Yes" if h2_p < 0.05 else "No",
+                      "Direction": "Negative" if h2_r < 0 else "Positive",
+                      "Strength": "Strong" if abs(h2_r) > 0.7 else "Moderate" if abs(h2_r) > 0.3 else "Weak"})
+    # H3
+    h3_trend = clean_df.groupby("Year")["Extreme_Weather_Events"].mean().reset_index()
+    h3_slope, h3_int, h3_r, h3_p, h3_se = stats.linregress(h3_trend["Year"], h3_trend["Extreme_Weather_Events"])
+    h_results.append({"Hypothesis": "H3: Extreme Events Trend", "Pearson r": f"{h3_r:.3f}",
+                      "p-value": f"{h3_p:.4e}", "Significant (p<0.05)": "Yes" if h3_p < 0.05 else "No",
+                      "Direction": "Upward" if h3_slope > 0 else "Downward",
+                      "Strength": "Strong" if abs(h3_r) > 0.7 else "Moderate" if abs(h3_r) > 0.3 else "Weak"})
+    # H4
+    h4_data = clean_df.dropna(subset=["Forest_Area_pct", "Extreme_Weather_Events"])
+    h4_r, h4_p = stats.pearsonr(h4_data["Forest_Area_pct"], h4_data["Extreme_Weather_Events"])
+    h_results.append({"Hypothesis": "H4: Forest vs Extreme Events", "Pearson r": f"{h4_r:.3f}",
+                      "p-value": f"{h4_p:.4e}", "Significant (p<0.05)": "Yes" if h4_p < 0.05 else "No",
+                      "Direction": "Negative" if h4_r < 0 else "Positive",
+                      "Strength": "Strong" if abs(h4_r) > 0.7 else "Moderate" if abs(h4_r) > 0.3 else "Weak"})
+
+    h_summary_df = pd.DataFrame(h_results)
+    st.dataframe(h_summary_df, use_container_width=True, hide_index=True)
+    st.caption(
+        "⚠️ **Bonferroni correction note:** With 4 tests on the same data, the stricter threshold is 0.05 ÷ 4 = 0.0125. "
+        "All tests measure **association, not causation**."
+    )
+    st.markdown(
+        "**Plain-English summary:**\n"
+        "- **H1:** The link between CO₂ and temperature is confounded by geography — cold industrial nations emit more but are colder.\n"
+        "- **H2:** Countries with more renewable energy tend to have lower emissions — supports the energy transition narrative.\n"
+        "- **H3:** Extreme weather events have generally increased over time, consistent with climate change expectations.\n"
+        "- **H4:** Forest coverage alone does not strongly predict extreme weather events at the national level."
+    )
+
     if show_technical:
         with st.expander("Interpretation guardrails"):
             st.write(
@@ -1043,6 +1185,41 @@ elif st.session_state.current_page == "Modeling & Prediction":
         results_df["Error (°C)"] = (results_df["Avg_Temperature_degC"] - results_df["Predicted_Avg_Temperature_degC"]).round(3)
         st.dataframe(results_df, use_container_width=True, hide_index=True)
         st.caption("🔍 Check the Error column: small numbers mean good predictions; large numbers mean the model struggled.")
+
+        # ── Per-Country Metrics (from Notebook 04) ──
+        st.subheader("📊 Per-Country Model Performance")
+        st.markdown(
+            "**What this shows:** How the model performs for each country individually (from **Notebook 04**). "
+            "Countries with stable temperature histories have low MAE and high R²; countries with volatile climates may score worse."
+        )
+        country_metrics_rows = []
+        train_all, test_all = time_aware_split(clean_df)
+        for c_name, c_group in clean_df.groupby("Country"):
+            c_train = c_group[c_group["Year"] <= train_all["Year"].max()]
+            c_test = c_group[c_group["Year"] > train_all["Year"].max()]
+            if len(c_train) < 2 or len(c_test) < 1:
+                continue
+            c_X_train, c_y_train = build_features(c_train)
+            c_X_test, c_y_test = build_features(c_test)
+            if c_y_train is None or c_y_test is None:
+                continue
+            c_model = LinearRegression()
+            c_model.fit(c_X_train, c_y_train)
+            c_X_test = align_features(c_X_test, c_X_train.columns.tolist())
+            c_preds = c_model.predict(c_X_test)
+            c_mae = mean_absolute_error(c_y_test, c_preds)
+            c_rmse = np.sqrt(mean_squared_error(c_y_test, c_preds))
+            c_r2 = r2_score(c_y_test, c_preds) if len(c_y_test) > 1 else float("nan")
+            country_metrics_rows.append({"Country": c_name, "MAE (°C)": round(c_mae, 3),
+                                          "RMSE (°C)": round(c_rmse, 3), "R²": round(c_r2, 3),
+                                          "Test samples": len(c_y_test)})
+        if country_metrics_rows:
+            cm_df = pd.DataFrame(country_metrics_rows).sort_values("MAE (°C)")
+            st.dataframe(cm_df, use_container_width=True, hide_index=True)
+            st.caption(
+                "💡 **Reading guide:** R² > 0.6 = reliable predictions; R² < 0.3 = model misses important factors. "
+                "MAE < 1.0°C = useful for general trends; MAE > 2.0°C = limited practical value."
+            )
     else:
         st.warning("⚠️ Insufficient data for model training. Please check your selected countries and year range.")
 
@@ -1068,12 +1245,50 @@ elif st.session_state.current_page == "Modeling & Prediction":
             )
             st.plotly_chart(pred_fig, use_container_width=True)
             st.caption("⚠️ **Important:** These are based on past trends. They assume nothing changes. Real futures depend on policy, technology, and behavior.")
-            st.info(
-                "📊 **Confidence intervals** for these forecasts are available in the exported file "
-                "`model_predictions_with_ci.csv` (generated in Notebook 04). The 95% confidence intervals "
-                "show the range within which the true temperature is likely to fall, providing a visual "
-                "sense of forecast uncertainty."
-            )
+
+            # ── Confidence Interval Visualization (from Notebook 04) ──
+            ci_df = load_ci_predictions()
+            if not ci_df.empty:
+                ci_filtered = ci_df[ci_df["Country"].isin(selected_countries)]
+                if not ci_filtered.empty:
+                    st.subheader("📊 Forecast Confidence Intervals")
+                    st.markdown(
+                        "**What this shows:** The shaded area represents the 95% confidence interval from **Notebook 04** bootstrap resampling. "
+                        "The true future temperature is likely to fall within this range. Wider bands = more uncertainty."
+                    )
+                    ci_countries = ci_filtered["Country"].unique()
+                    for ci_country in ci_countries[:6]:  # Limit to 6 to keep page manageable
+                        c_ci = ci_filtered[ci_filtered["Country"] == ci_country]
+                        ci_fig = go.Figure()
+                        ci_fig.add_trace(go.Scatter(
+                            x=c_ci["Year"], y=c_ci["Upper_95CI"],
+                            mode="lines", line=dict(width=0), showlegend=False,
+                        ))
+                        ci_fig.add_trace(go.Scatter(
+                            x=c_ci["Year"], y=c_ci["Lower_95CI"],
+                            mode="lines", line=dict(width=0), fill="tonexty",
+                            fillcolor="rgba(100,100,255,0.2)", name="95% CI",
+                        ))
+                        ci_fig.add_trace(go.Scatter(
+                            x=c_ci["Year"], y=c_ci["Predicted_Temperature"],
+                            mode="lines+markers", name="Forecast",
+                            line=dict(color="blue", width=2),
+                        ))
+                        ci_fig.update_layout(
+                            title=f"{get_country_emoji(ci_country)} {ci_country} — Forecast with 95% CI",
+                            xaxis_title="Year", yaxis_title="Temperature (°C)",
+                            height=350, margin=dict(t=50, b=30),
+                        )
+                        st.plotly_chart(ci_fig, use_container_width=True)
+                    st.caption(
+                        "💡 **Interpretation:** Narrow bands mean the model is confident; wide bands mean more uncertainty. "
+                        "Countries with volatile temperature histories will have wider confidence intervals."
+                    )
+            else:
+                st.info(
+                    "📊 **Confidence intervals** for these forecasts are available in the exported file "
+                    "`model_predictions_with_ci.csv` (generated in Notebook 04). Run the notebook to see CI charts here."
+                )
 
     if show_technical:
         with st.expander("Forecast limitations"):

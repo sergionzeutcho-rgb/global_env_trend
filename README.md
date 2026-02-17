@@ -8,8 +8,8 @@ This capstone project demonstrates comprehensive data analytics skills applied t
 - ✅ Business requirements analysis with stakeholder-driven user stories
 - ✅ Complete data pipeline: 4 Jupyter notebooks (ingestion → EDA → hypothesis testing → modeling)
 - ✅ Statistical analysis: 4 hypotheses tested with correlation studies and trend analysis
-- ✅ Predictive modeling: Linear regression with performance metrics (MAE, RMSE, R²)
-- ✅ Interactive dashboard: 8-page Streamlit application with visualizations and scenario modeling
+- ✅ Predictive modeling: Per-country Year→Temperature linear regression with performance metrics (MAE, RMSE, R²) and 95% bootstrap confidence intervals
+- ✅ Interactive dashboard: 8-page Streamlit application with icon-based quick navigation, descriptive statistics, hypothesis summary table, confidence interval charts, and scenario modeling
 - ✅ Data ethics framework: Comprehensive privacy, bias, and responsible AI documentation
 - ✅ Deployment-ready: Configured for Heroku with all dependencies specified
 
@@ -76,7 +76,13 @@ Stakeholders have raw environmental data, but they need clear visualizations and
 
 ## Dashboard Design
 
-### Page 1: Executive Summary
+### Global Quick-Navigation Bar
+* A persistent icon-based navigation bar appears at the top of every page
+* 8 buttons with descriptive icons (📝 📊 📈 🔍 🤖 📊 🔄 ⚙️) allow one-click access to any page
+* The active page is visually highlighted for orientation
+* Complements the sidebar navigation for faster page switching
+
+### Page 1: 📝 Executive Summary
 * Quick project summary and key findings
 	* Overview of the project's purpose and goals
 	* Key observations section showing:
@@ -88,16 +94,19 @@ Stakeholders have raw environmental data, but they need clear visualizations and
 	* Country-specific findings table showing which countries face the greatest challenges or have made the strongest progress
 	* Status indicators (red/yellow/green) to highlight urgent attention areas
 
-### Page 2: Data Overview
-* Data overview and quality assessment
+### Page 2: 📊 Data Overview
+* Data overview, quality assessment, and exploratory statistics
 	* Summary metrics: number of countries, years covered, total records, and indicators tracked
+	* **Descriptive statistics table** showing count, mean, std, min, quartiles, and max for all numeric variables
+	* **Interactive histograms** for all 7 numeric variables (temperature, CO₂, sea level, rainfall, population, renewable energy, extreme weather) with explanatory captions
+	* **Box plots by country** for 4 key metrics (temperature, CO₂ emissions, renewable energy, extreme weather) showing distribution spread across nations
 	* Data quality assessment showing missing values, duplicate rows, and data integrity status
-	* Missing values by column if applicable
+	* Cleaning steps applied (duplicates removed, missing values handled, type/range validation)
 	* Key fields glossary with definitions and context for each metric
 	* Sample data table showing the first 10 records from the dataset with country flag emojis
 	* Download options for full dataset, data glossary, and quality report in CSV format
 
-### Page 3: Overview
+### Page 3: 📈 Overview
 * Key signals and trends
 	* Data coverage metrics (countries, years, records)
 	* Latest trends showing:
@@ -105,14 +114,15 @@ Stakeholders have raw environmental data, but they need clear visualizations and
 		* CO2 per person with change indicator
 		* Renewable energy percentage with change indicator
 	* Plain-language captions explaining what each metric means
-	* Temperature over time line chart with guidance on interpretation
-	* Extreme weather events bar chart showing top 10 countries in the latest year
+	* Temperature over time line chart with explanatory caption
+	* Extreme weather events bar chart showing top 10 countries in the latest year with explanatory caption
 	* Quick insights section highlighting:
 		* Countries with biggest temperature increases
 		* Countries with highest renewable energy growth
 		* Overall trends summary
+	* All charts include 💡 interpretation captions to help non-technical users
 
-### Page 4: Explore Patterns
+### Page 4: 🔍 Explore Patterns
 * Correlation and relationship analysis
 	* Scatter plots showing:
 		* CO2 emissions vs. average temperature
@@ -123,49 +133,57 @@ Stakeholders have raw environmental data, but they need clear visualizations and
 		* Color coding by country
 		* Trend lines where appropriate
 		* Plain-language interpretation of what the pattern shows
-	* Correlation heatmap showing relationships between all key metrics
+	* Correlation heatmap showing relationships between all key metrics with explanatory caption
+	* **Hypothesis Test Summary table** showing all 4 hypotheses (H1–H4) with:
+		* Pearson correlation coefficient (r)
+		* p-value and significance status
+		* Plain-language conclusion for each hypothesis
 	* Technical notes toggle to show/hide detailed statistical information
 	* Time series visualizations showing trends over the full period
 
-### Page 5: Modeling & Prediction
+### Page 5: 🤖 Modeling & Prediction
 * Predictive modeling and forecasting
-	* Model overview explaining the approach (per-country linear regression)
-	* Model performance metrics section showing:
+	* Model overview explaining the approach (per-country Year→Temperature linear regression)
+	* Global model performance metrics section showing:
 		* Mean Absolute Error (MAE)
 		* Root Mean Squared Error (RMSE)
 		* R² score
 	* Plain-language explanation of what these metrics mean
-	* Training and test split information (time-aware split at 2018)
+	* Training and test split information (split_year = 2018)
+	* **Per-country model performance table** showing MAE, RMSE, and R² for each country individually
 	* Temperature forecast visualization showing:
 		* Historical data (2000-2024)
 		* Predictions for 2025-2029
 		* Comparison between actual and predicted values
+	* **Forecast confidence interval visualization** showing 95% bootstrap CI bands per country
 	* Country selector to view predictions for specific countries
+	* Custom prediction tool for interactive single-country forecasting
 	* Download button to export predictions as CSV
 	* Model limitations and caveats clearly stated
+	* All charts include 💡 interpretation captions
 
-### Page 6: Analytics Hub
+### Page 6: 📊 Analytics Hub
 * Advanced analytics and insights
 	* Data quality dashboard showing how complete and unique the data is
 	* Overall quality score to quickly assess data reliability
-	* Correlation heatmap showing how different environmental factors relate to each other with color-coded values
+	* Correlation heatmap showing how different environmental factors relate to each other with color-coded values and explanatory caption
 	* Anomaly detection to find unusual data points that stand out from normal patterns for each country
 	* Downloadable quality reports and anomaly data in CSV format
 
-### Page 7: Comparison Tool
+### Page 7: 🔄 Comparison Tool
 * Country-to-country comparison
 	* Multi-select up to 5 countries for side-by-side comparison
-	* Latest year comparison bar charts for temperature, emissions, renewables, and extreme events
-	* Trends over time with selectable metrics
+	* Latest year comparison bar charts for temperature, emissions, renewables, and extreme events with explanatory captions
+	* Trends over time with selectable metrics and explanatory captions
 	* Interactive line charts showing historical patterns for selected countries
 	* Downloadable comparison data in CSV format
 
-### Page 8: Scenario Builder
+### Page 8: ⚙️ Scenario Builder
 * Interactive "what-if" exploration tool
 	* Create named scenarios for future years (2025-2050)
 	* Adjust environmental factors: CO₂ reduction, renewable energy increase, forest area change, extreme events, rainfall, and population growth
 	* See estimated temperature based on your chosen scenario
-	* Visual comparison between current baseline and your scenario
+	* Visual comparison between current baseline and your scenario with explanatory caption
 	* Shows temperature difference and what it might mean
 
 ## Project Hypothesis and Validation
@@ -310,7 +328,7 @@ Stakeholders have raw environmental data, but they need clear visualizations and
 
 * **Model Uncertainty:**
   - **These are exploratory trends to help us learn, not definitive forecasts**
-  - Our simple model gives single number predictions, not ranges of possibilities (confidence intervals show uncertainty ranges)
+  - Our model now provides 95% bootstrap confidence intervals alongside point predictions, visualised in the dashboard
   - Real climate is affected by policy changes, new technology, and natural variations that our model doesn't include
   - Users should think of predictions as "if current trends continue" scenarios, not certainties about the future
 
@@ -481,15 +499,20 @@ The dashboard will open in your browser at `http://localhost:8501`.
 
 ### Dashboard Navigation
 
-Use the sidebar to switch between pages:
-- **Executive Summary** - High-level findings and recommendations
-- **Data Overview** - Dataset information and quality metrics
-- **Overview** - Key environmental trends
-- **Explore Patterns** - Correlation and relationship analysis
-- **Modeling & Prediction** - Temperature forecasting tool
-- **Analytics Hub** - Advanced analytics and anomaly detection
-- **Comparison Tool** - Country-to-country comparisons
-- **Scenario Builder** - What-if scenario modeling
+The dashboard offers **two navigation methods**:
+
+1. **Quick-navigation bar** (top of every page) — 8 icon-labelled buttons for one-click page switching; the active page is highlighted
+2. **Sidebar** — traditional dropdown and filters (countries, year range, technical notes toggle)
+
+Pages:
+- 📝 **Executive Summary** — High-level findings and recommendations
+- 📊 **Data Overview** — Dataset information, descriptive statistics, histograms, box plots, and quality metrics
+- 📈 **Overview** — Key environmental trends with interpreted charts
+- 🔍 **Explore Patterns** — Correlation analysis, scatter plots, and hypothesis test summary
+- 🤖 **Modeling & Prediction** — Per-country performance table, forecasts with confidence intervals, and custom prediction tool
+- 📊 **Analytics Hub** — Data quality dashboard, correlations, and anomaly detection
+- 🔄 **Comparison Tool** — Country-to-country side-by-side comparisons
+- ⚙️ **Scenario Builder** — Interactive what-if scenario modeling
 
 ### Filters
 

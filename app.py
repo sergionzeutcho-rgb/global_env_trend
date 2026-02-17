@@ -914,6 +914,10 @@ elif st.session_state.current_page == "Overview":
         labels=LABEL_MAP,
     )
     st.plotly_chart(line_fig, use_container_width=True)
+    st.caption(
+        "💡 **How to read this:** An upward slope = warming trend. Even small increases (0.5°C) can disrupt "
+        "agriculture, water systems, and ecosystems over decades. Year-to-year dips are normal (natural variability)."
+    )
 
     latest_year = int(grouped["Year"].max())
     st.subheader("⛈️ Extreme Weather Events (Latest Year)")
@@ -932,6 +936,10 @@ elif st.session_state.current_page == "Overview":
         labels=LABEL_MAP,
     )
     st.plotly_chart(bar_fig, use_container_width=True)
+    st.caption(
+        "💡 **Interpretation:** Countries with the longest bars face the greatest exposure to climate hazards. "
+        "This can inform where disaster preparedness and adaptation investments are most needed."
+    )
 
     st.subheader("🔍 Quick Insights")
     country_delta = (
@@ -1190,39 +1198,41 @@ elif st.session_state.current_page == "Modeling & Prediction":
         st.dataframe(results_df, use_container_width=True, hide_index=True)
         st.caption("🔍 Check the Error column: small numbers mean good predictions; large numbers mean the model struggled.")
 
-        # ── Per-Country Metrics (from Notebook 04) ──
+        # ── Per-Country Metrics (matching Notebook 04 approach) ──
         st.subheader("📊 Per-Country Model Performance")
         st.markdown(
-            "**What this shows:** How the model performs for each country individually (from **Notebook 04**). "
-            "Countries with stable temperature histories have low MAE and high R²; countries with volatile climates may score worse."
+            "**What this shows:** How a simple per-country linear model (Year → Temperature) performs, "
+            "matching the approach in **Notebook 04**. Data is split at 2018: training on 2000–2018, "
+            "testing on 2019–2024. R² requires at least 2 test points to compute."
         )
+        split_year = 2018
         country_metrics_rows = []
-        train_all, test_all = time_aware_split(clean_df)
         for c_name, c_group in clean_df.groupby("Country"):
-            c_train = c_group[c_group["Year"] <= train_all["Year"].max()]
-            c_test = c_group[c_group["Year"] > train_all["Year"].max()]
+            grp = c_group.sort_values("Year").drop_duplicates("Year")
+            c_train = grp[grp["Year"] <= split_year]
+            c_test = grp[grp["Year"] > split_year]
             if len(c_train) < 2 or len(c_test) < 1:
                 continue
-            c_X_train, c_y_train = build_features(c_train)
-            c_X_test, c_y_test = build_features(c_test)
-            if c_y_train is None or c_y_test is None:
-                continue
             c_model = LinearRegression()
-            c_model.fit(c_X_train, c_y_train)
-            c_X_test = align_features(c_X_test, c_X_train.columns.tolist())
-            c_preds = c_model.predict(c_X_test)
-            c_mae = mean_absolute_error(c_y_test, c_preds)
-            c_rmse = np.sqrt(mean_squared_error(c_y_test, c_preds))
-            c_r2 = r2_score(c_y_test, c_preds) if len(c_y_test) > 1 else float("nan")
+            c_model.fit(c_train[["Year"]], c_train["Avg_Temperature_degC"])
+            c_preds = c_model.predict(c_test[["Year"]])
+            c_mae = mean_absolute_error(c_test["Avg_Temperature_degC"], c_preds)
+            c_rmse = np.sqrt(mean_squared_error(c_test["Avg_Temperature_degC"], c_preds))
+            if len(c_test) > 1:
+                c_r2 = r2_score(c_test["Avg_Temperature_degC"], c_preds)
+                r2_display = round(c_r2, 3)
+            else:
+                r2_display = "N/A (1 sample)"
             country_metrics_rows.append({"Country": c_name, "MAE (°C)": round(c_mae, 3),
-                                          "RMSE (°C)": round(c_rmse, 3), "R²": round(c_r2, 3),
-                                          "Test samples": len(c_y_test)})
+                                          "RMSE (°C)": round(c_rmse, 3), "R²": r2_display,
+                                          "Test samples": len(c_test)})
         if country_metrics_rows:
             cm_df = pd.DataFrame(country_metrics_rows).sort_values("MAE (°C)")
             st.dataframe(cm_df, use_container_width=True, hide_index=True)
             st.caption(
-                "💡 **Reading guide:** R² > 0.6 = reliable predictions; R² < 0.3 = model misses important factors. "
-                "MAE < 1.0°C = useful for general trends; MAE > 2.0°C = limited practical value."
+                "💡 **Reading guide:** R² > 0.6 = reliable; R² < 0.3 = model misses important factors; "
+                "'N/A' means only 1 test point exists so R² cannot be computed. "
+                "MAE < 1.0°C = useful for trends; MAE > 2.0°C = limited value."
             )
     else:
         st.warning("⚠️ Insufficient data for model training. Please check your selected countries and year range.")
@@ -1462,6 +1472,11 @@ elif st.session_state.current_page == "Analytics Hub":
     ))
     corr_fig.update_layout(height=500, showlegend=False)
     st.plotly_chart(corr_fig, use_container_width=True)
+    st.caption(
+        "💡 **How to read this:** Red cells = variables increase together; blue = one goes up, the other goes down; "
+        "white = no relationship. Values close to ±1.0 are strong; near 0 are weak. Year is excluded to avoid "
+        "spurious correlations between variables that simply both trend upward over time."
+    )
     
     # Anomaly Detection
     st.markdown("---")
@@ -1533,6 +1548,10 @@ elif st.session_state.current_page == "Comparison Tool":
                     labels=LABEL_MAP,
                 )
                 st.plotly_chart(fig, use_container_width=True)
+            st.caption(
+                "💡 **How to compare:** Taller bars = higher values for that metric. Look for which countries lead "
+                "or lag in each area — this helps identify best practices and areas needing attention."
+            )
             
             # Trends comparison
             st.subheader("📈 Trends Over Time")
@@ -1548,6 +1567,10 @@ elif st.session_state.current_page == "Comparison Tool":
                 labels=LABEL_MAP,
             )
             st.plotly_chart(trend_fig, use_container_width=True)
+            st.caption(
+                "💡 **What to look for:** Converging lines mean countries are becoming more similar; "
+                "diverging lines mean the gap is growing. Steeper slopes = faster change."
+            )
             
             # Download comparison
             st.download_button(
@@ -1702,4 +1725,8 @@ elif st.session_state.current_page == "Scenario Builder":
                 
                 fig = px.bar(comparison_data, x="Scenario", y="Temperature (°C)", color="Scenario", text_auto=True)
                 st.plotly_chart(fig, use_container_width=True)
+                st.caption(
+                    "💡 **Reading this chart:** The left bar is the current baseline estimate; the right bar is your scenario. "
+                    "If your scenario bar is lower, the adjustments you made are associated with cooler temperatures."
+                )
 

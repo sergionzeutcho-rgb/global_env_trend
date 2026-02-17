@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from datetime import datetime
 from pathlib import Path
 
@@ -99,7 +100,7 @@ def time_aware_split(df: pd.DataFrame, train_frac: float = 0.8) -> tuple[pd.Data
 
 def model_metrics(y_true: pd.Series, y_pred: np.ndarray) -> dict[str, float]:
     mae = mean_absolute_error(y_true, y_pred)
-    rmse = mean_squared_error(y_true, y_pred, squared=False)
+    rmse = np.sqrt(mean_squared_error(y_true, y_pred))
     r2 = r2_score(y_true, y_pred)
     return {"MAE": mae, "RMSE": rmse, "R2": r2}
 
@@ -120,7 +121,7 @@ def get_country_emoji(country: str) -> str:
         "Japan": "🇯🇵", "Canada": "🇨🇦", "Mexico": "🇲🇽", "United Kingdom": "🇬🇧",
         "France": "🇫🇷", "Italy": "🇮🇹", "Spain": "🇪🇸", "South Korea": "🇰🇷",
         "Indonesia": "🇮🇩", "Thailand": "🇹🇭", "Vietnam": "🇻🇳", "Philippines": "🇵🇭",
-        "Egypt": "🇪🇬", "South Africa": "🇿🇦", "Kenya": "🇰🇪"
+        "Egypt": "🇪🇬", "South Africa": "🇿🇦", "Saudi Arabia": "🇸🇦", "Kenya": "🇰🇪"
     }
     return flags.get(country, "🌍")
 
@@ -241,24 +242,13 @@ if st.sidebar.button("🔄 Reset All Filters", help="Reset all filters to defaul
 all_countries = sorted(clean_df["Country"].unique().tolist())
 country_options = ["All"] + all_countries
 
-# Countries filter with search capability
+# Countries filter – Streamlit multiselect has built-in type-to-search
 st.sidebar.markdown("**📍 Countries** (Select or Search)")
-countries_search = st.sidebar.text_input(
-    "Search countries",
-    placeholder="e.g., United States, China...",
-    help="Type to filter country list",
-    label_visibility="collapsed"
-)
-if countries_search:
-    filtered_options = [c for c in country_options if countries_search.lower() in c.lower()]
-else:
-    filtered_options = country_options
-
 selected_countries = st.sidebar.multiselect(
     "Select countries",
-    filtered_options,
+    country_options,
     default=["All"],
-    help="Select one or more countries. 'All' includes every country in the dataset.",
+    help="Type to search. Select one or more countries. 'All' includes every country.",
     label_visibility="collapsed"
 )
 if not selected_countries or "All" in selected_countries:
@@ -688,7 +678,7 @@ elif st.session_state.current_page == "Data Overview":
     st.subheader("📦 Box Plots by Country")
     st.markdown(
         "**What this shows:** The range of values for key metrics broken down by country (from **Notebook 02**). "
-        "The box covers the middle 50%%; the line inside is the median. Dots outside the whiskers are outliers."
+        "The box covers the middle 50%; the line inside is the median. Dots outside the whiskers are outliers."
     )
     box_metrics = ["Avg_Temperature_degC", "CO2_Emissions_tons_per_capita",
                    "Renewable_Energy_pct", "Extreme_Weather_Events"]
@@ -1446,11 +1436,9 @@ elif st.session_state.current_page == "Analytics Hub":
         duplicates = clean_df.duplicated().sum()
         st.metric("Unique Records", f"{(1 - duplicates/len(clean_df))*100:.2f}%")
     
-    import os as _os
-    _file_mtime = _os.path.getmtime(CLEAN_PATH) if CLEAN_PATH.exists() else None
+    _file_mtime = os.path.getmtime(CLEAN_PATH) if CLEAN_PATH.exists() else None
     if _file_mtime:
-        from datetime import datetime as _dt
-        st.info(f"✅ **Data last updated:** {_dt.fromtimestamp(_file_mtime).strftime('%B %d, %Y at %I:%M %p')}")
+        st.info(f"✅ **Data last updated:** {datetime.fromtimestamp(_file_mtime).strftime('%B %d, %Y at %I:%M %p')}")
     else:
         st.info("✅ **Data last updated:** Unknown")
     

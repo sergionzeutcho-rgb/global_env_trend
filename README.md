@@ -180,11 +180,14 @@ Stakeholders have raw environmental data, but they need clear visualizations and
 
 ### Page 8: ⚙️ Scenario Builder
 * Interactive "what-if" exploration tool
+	* Dedicated country selector (independent of sidebar filters) with baseline context
 	* Create named scenarios for future years (2025-2050)
-	* Adjust environmental factors: CO₂ reduction, renewable energy increase, forest area change, extreme events, rainfall, and population growth
-	* See estimated temperature based on your chosen scenario
+	* Adjust environmental factors: CO₂ change, renewable energy, forest area, extreme events, rainfall, and population growth
+	* Model performance & methodology panel (R², MAE, sample count) with a clear explanation that country geography dominates predictions while environmental sliders produce incremental changes
+	* See estimated temperature based on your chosen scenario with correct country-specific encoding
 	* Visual comparison between current baseline and your scenario with explanatory caption
-	* Shows temperature difference and what it might mean
+	* Feature-contribution breakdown table showing each factor's coefficient, change, and temperature impact
+	* Shows temperature difference and interpretation of results
 
 ## Project Hypothesis and Validation
 
@@ -534,7 +537,7 @@ Pages:
 - 🤖 **Modeling & Prediction** — Per-country performance table, forecasts with confidence intervals, and custom prediction tool
 - 📊 **Analytics Hub** — Data quality dashboard, correlations, and anomaly detection
 - 🔄 **Comparison Tool** — Country-to-country side-by-side comparisons
-- ⚙️ **Scenario Builder** — Interactive what-if scenario modeling
+- ⚙️ **Scenario Builder** — Interactive what-if scenario modeling with per-country baseline, model metrics, and feature-contribution breakdown
 
 ### Filters
 

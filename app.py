@@ -112,6 +112,32 @@ def align_features(row_df: pd.DataFrame, feature_columns: list[str]) -> pd.DataF
     return row_df[feature_columns]
 
 
+def build_scenario_row(
+    data_dict: dict, country: str, training_columns: list[str]
+) -> pd.DataFrame:
+    """Build a single-row feature DataFrame with correct country-dummy encoding.
+
+    ``pd.get_dummies(drop_first=True)`` on a single-row DataFrame drops the
+    only category present, which silently mis-encodes the country.  This helper
+    manually creates all dummy columns so every country is encoded correctly.
+    """
+    feature_cols = [
+        "Year", "CO2_Emissions_tons_per_capita", "Sea_Level_Rise_mm",
+        "Rainfall_mm", "Population", "Renewable_Energy_pct",
+        "Extreme_Weather_Events", "Forest_Area_pct",
+    ]
+    row = pd.DataFrame([{col: data_dict[col] for col in feature_cols}])
+    # Create country dummies manually from training columns
+    country_cols = [c for c in training_columns if c.startswith("Country_")]
+    for c in country_cols:
+        row[c] = 0
+    target_col = f"Country_{country}"
+    if target_col in country_cols:
+        row[target_col] = 1
+    # Ensure column order matches training
+    return row[training_columns]
+
+
 # Helper functions for enhancements
 def get_country_emoji(country: str) -> str:
     """Map country to flag emoji"""
@@ -1417,6 +1443,7 @@ elif st.session_state.current_page == "Modeling & Prediction":
                     ci_countries = ci_filtered["Country"].unique()
                     for ci_country in ci_countries[:6]:  # Limit to 6 to keep page manageable
                         c_ci = ci_filtered[ci_filtered["Country"] == ci_country]
+                        ci_width = (c_ci["Upper_95CI"] - c_ci["Lower_95CI"]).mean()
                         ci_fig = go.Figure()
                         ci_fig.add_trace(go.Scatter(
                             x=c_ci["Year"], y=c_ci["Upper_95CI"],
@@ -1432,15 +1459,25 @@ elif st.session_state.current_page == "Modeling & Prediction":
                             mode="lines+markers", name="Forecast",
                             line=dict(color="blue", width=2),
                         ))
+                        title_text = f"{get_country_emoji(ci_country)} {ci_country} — Forecast with 95% CI"
+                        subtitle = ""
+                        if ci_width < 0.01:
+                            subtitle = (
+                                "<br><sup style='color:gray'>CI band is too narrow to display — "
+                                "this country's historical data is almost perfectly linear, "
+                                "so every bootstrap resample produces the same model.</sup>"
+                            )
                         ci_fig.update_layout(
-                            title=f"{get_country_emoji(ci_country)} {ci_country} — Forecast with 95% CI",
+                            title=title_text + subtitle,
                             xaxis_title="Year", yaxis_title="Temperature (°C)",
-                            height=350, margin=dict(t=50, b=30),
+                            height=350, margin=dict(t=70 if subtitle else 50, b=30),
                         )
                         st.plotly_chart(ci_fig, use_container_width=True)
                     st.caption(
                         "💡 **Interpretation:** Narrow bands mean the model is confident; wide bands mean more uncertainty. "
-                        "Countries with volatile temperature histories will have wider confidence intervals."
+                        "Countries with volatile temperature histories will have wider confidence intervals. "
+                        "If no band is visible, the country's data is almost perfectly linear — every bootstrap "
+                        "resample yields the same model, so the confidence interval has zero width."
                     )
             else:
                 st.info(
@@ -1540,23 +1577,17 @@ elif st.session_state.current_page == "Modeling & Prediction":
         submitted = st.form_submit_button("🔮 Predict temperature")
 
     if submitted and model_ready and full_model is not None:
-        input_df = pd.DataFrame(
-            [
-                {
-                    "Year": pred_year,
-                    "CO2_Emissions_tons_per_capita": pred_co2,
-                    "Sea_Level_Rise_mm": pred_sea,
-                    "Rainfall_mm": pred_rain,
-                    "Population": pred_pop,
-                    "Renewable_Energy_pct": pred_renew,
-                    "Extreme_Weather_Events": pred_events,
-                    "Forest_Area_pct": pred_forest,
-                    "Country": pred_country,
-                }
-            ]
-        )
-        input_X, _ = build_features(input_df, include_target=False)
-        input_X = align_features(input_X, full_X.columns.tolist())
+        input_data = {
+            "Year": pred_year,
+            "CO2_Emissions_tons_per_capita": pred_co2,
+            "Sea_Level_Rise_mm": pred_sea,
+            "Rainfall_mm": pred_rain,
+            "Population": pred_pop,
+            "Renewable_Energy_pct": pred_renew,
+            "Extreme_Weather_Events": pred_events,
+            "Forest_Area_pct": pred_forest,
+        }
+        input_X = build_scenario_row(input_data, pred_country, full_X.columns.tolist())
         pred_value = full_model.predict(input_X)[0]
         
         st.success(f"🌡️ **Predicted temperature: {pred_value:.2f}°C**")
@@ -1749,147 +1780,263 @@ elif st.session_state.current_page == "Scenario Builder":
         "Create 'what-if' scenarios to explore how environmental factors correlate with temperature. "
         "Adjust multiple indicators to see their combined effect on temperature estimates."
     )
-    
+
     st.warning(
-        "⚠️ **Important:** This tool uses a multivariate regression model to explore relationships between environmental factors. "
-        "It shows how indicators correlate with temperature based on historical data, NOT precise climate predictions. "
-        "Use this for educational exploration and understanding factor relationships, not for policy decisions."
+        "⚠️ **Important:** This tool uses a multivariate regression model trained on "
+        "historical data (2000–2024) to explore relationships between environmental "
+        "factors and temperature. It shows **correlations, not causation**. Country "
+        "geography (latitude, altitude, climate zone) is the dominant predictor; "
+        "environmental-factor adjustments produce small incremental changes on top of "
+        "that baseline. Use this for educational exploration, not policy decisions."
     )
-    
-    # Train model for scenario predictions (use full dataset for stable encoding)
+
+    # ── Train scenario model on full dataset for stable encoding ──────────
     full_X_scenario, full_y_scenario = build_features(clean_df)
     scenario_ready = False
     scenario_model = None
+    scenario_r2 = None
+    scenario_mae = None
+
     if full_y_scenario is not None and full_X_scenario is not None:
         scenario_model = LinearRegression()
         scenario_model.fit(full_X_scenario, full_y_scenario)
         scenario_ready = True
+
+        # Compute training-set metrics for transparency
+        _y_pred_sc = scenario_model.predict(full_X_scenario)
+        scenario_r2 = r2_score(full_y_scenario, _y_pred_sc)
+        scenario_mae = float(np.mean(np.abs(full_y_scenario - _y_pred_sc)))
     else:
-        st.warning("⚠️ Unable to build model for scenarios - insufficient data. Please check your filters.")
-        scenario_ready = False
-    
+        st.warning("⚠️ Unable to build model for scenarios — insufficient data.")
+
     st.markdown("---")
     st.subheader("📋 Create Your Scenario")
-    
+
     if not scenario_ready:
-        st.warning("❌ Scenario builder is unavailable. Please adjust your filters to get enough data.")
+        st.warning("❌ Scenario builder is unavailable. Please adjust your filters.")
     else:
-        col1, col2 = st.columns(2)
-        with col1:
+        # ── Model performance summary ────────────────────────────────────
+        with st.expander("📈 Model performance & methodology", expanded=False):
+            m1, m2, m3 = st.columns(3)
+            with m1:
+                st.metric("Training R²", f"{scenario_r2:.4f}" if scenario_r2 is not None else "N/A")
+            with m2:
+                st.metric("Training MAE", f"{scenario_mae:.3f} °C" if scenario_mae is not None else "N/A")
+            with m3:
+                st.metric("Training samples", f"{len(full_y_scenario)}")
+            st.markdown(
+                "**How it works:** A multivariate linear regression is fitted on all "
+                "19 countries × 6 time periods. Features include Year, CO₂ emissions, "
+                "sea-level rise, rainfall, population, renewable-energy share, extreme-"
+                "weather events, forest area, and one-hot-encoded country indicators.\n\n"
+                "**Key caveat:** Country indicators alone explain ~99.99 % of variance "
+                "(each country has a characteristic base temperature driven by geography). "
+                "The environmental sliders therefore produce **small, incremental** "
+                "temperature shifts. This is realistic: a single country's policy change "
+                "will not alter its base climate, but it can nudge the trend."
+            )
+
+        # ── Country selector (independent of sidebar) ────────────────────
+        scenario_countries = sorted(clean_df["Country"].unique().tolist())
+        col_top1, col_top2, col_top3 = st.columns(3)
+        with col_top1:
+            scenario_country = st.selectbox(
+                "Country for scenario",
+                scenario_countries,
+                index=scenario_countries.index("United States")
+                if "United States" in scenario_countries else 0,
+                help="Choose the country whose baseline data will seed the scenario"
+            )
+        with col_top2:
             scenario_name = st.text_input(
-                "Scenario name", 
+                "Scenario name",
                 "My Environmental Scenario",
                 help="Give your scenario a descriptive name"
             )
-        with col2:
+        with col_top3:
             scenario_year = st.number_input(
-                "Target year", 
-                value=2030, 
-                min_value=2025, 
+                "Target year",
+                value=2030,
+                min_value=2025,
                 max_value=2050,
-                help="Select a future year for prediction (2025-2050)"
+                help="Select a future year for prediction (2025–2050)"
             )
-        
+
+        # ── Baseline: latest row for the chosen country ──────────────────
+        country_rows = clean_df[clean_df["Country"] == scenario_country].sort_values("Year")
+        baseline_row = country_rows.iloc[-1]  # most recent year
+        baseline_year = int(baseline_row["Year"])
+
+        st.caption(
+            f"Baseline: **{scenario_country}** in **{baseline_year}** — "
+            f"Temp {baseline_row['Avg_Temperature_degC']:.1f} °C, "
+            f"CO₂ {baseline_row['CO2_Emissions_tons_per_capita']:.1f} t/cap, "
+            f"Renewables {baseline_row['Renewable_Energy_pct']:.1f} %"
+        )
+
         st.markdown("**Adjust these factors from current levels:**")
-        
+
         col1, col2, col3 = st.columns(3)
         with col1:
-            co2_reduction = st.slider("CO₂ reduction (%)", -50, 50, 0, help="% change from current level")
+            co2_reduction = st.slider(
+                "CO₂ change (%)", -50, 50, 0,
+                help="% change from current level (negative = reduction)"
+            )
             renew_increase = st.slider(
-                "Renewable energy increase (%)", 
+                "Renewable energy change (%)",
                 -20, 50, 0,
                 help="Change in renewable energy share"
             )
         with col2:
             forest_increase = st.slider(
-                "Forest area increase (%)", 
+                "Forest area change (%)",
                 -20, 30, 0,
                 help="Change in forest coverage percentage"
             )
             extreme_change = st.slider(
-                "Extreme events change (%)", 
+                "Extreme events change (%)",
                 -50, 100, 0,
                 help="Projected change in frequency of extreme weather events"
             )
         with col3:
             rainfall_change = st.slider(
-                "Rainfall change (mm)", 
+                "Rainfall change (mm)",
                 -200, 200, 0,
                 help="Change in annual rainfall amount"
             )
             pop_growth = st.slider(
-                "Population growth (%)", 
+                "Population growth (%)",
                 -10, 50, 0,
                 help="Projected population growth rate"
             )
-        
+
         if st.button("🚀 Run Scenario"):
             if scenario_model is None:
-                st.error("Model not available. Please check your data filters.")
+                st.error("Model not available. Please check your data.")
             else:
-                # Get current baseline
-                baseline = filtered_df[filtered_df["Year"] == filtered_df["Year"].max()].mean(numeric_only=True)
-                
-                # Calculate scenario values
+                # ── Build scenario input from country baseline ────────────
                 scenario_data = {
                     "Year": scenario_year,
-                    "CO2_Emissions_tons_per_capita": baseline["CO2_Emissions_tons_per_capita"] * (1 + co2_reduction/100),
-                    "Renewable_Energy_pct": min(100, baseline["Renewable_Energy_pct"] * (1 + renew_increase/100)),
-                    "Forest_Area_pct": min(100, baseline["Forest_Area_pct"] * (1 + forest_increase/100)),
-                    "Extreme_Weather_Events": max(0, baseline["Extreme_Weather_Events"] * (1 + extreme_change/100)),
-                    "Rainfall_mm": max(0, baseline["Rainfall_mm"] + rainfall_change),
-                    "Population": baseline["Population"] * (1 + pop_growth/100),
-                    "Sea_Level_Rise_mm": baseline["Sea_Level_Rise_mm"],
+                    "CO2_Emissions_tons_per_capita": baseline_row["CO2_Emissions_tons_per_capita"] * (1 + co2_reduction / 100),
+                    "Renewable_Energy_pct": min(100, baseline_row["Renewable_Energy_pct"] * (1 + renew_increase / 100)),
+                    "Forest_Area_pct": min(100, baseline_row["Forest_Area_pct"] * (1 + forest_increase / 100)),
+                    "Extreme_Weather_Events": max(0, baseline_row["Extreme_Weather_Events"] * (1 + extreme_change / 100)),
+                    "Rainfall_mm": max(0, baseline_row["Rainfall_mm"] + rainfall_change),
+                    "Population": baseline_row["Population"] * (1 + pop_growth / 100),
+                    "Sea_Level_Rise_mm": baseline_row["Sea_Level_Rise_mm"],
                 }
-                
-                # Predict temperature for scenario
-                scenario_df = pd.DataFrame([scenario_data])
-                scenario_df["Country"] = selected_countries[0] if selected_countries else "Global"
-                
-                scenario_X, _ = build_features(scenario_df, include_target=False)
-                scenario_X = align_features(scenario_X, full_X_scenario.columns.tolist())
+
+                train_cols = full_X_scenario.columns.tolist()
+                scenario_X = build_scenario_row(
+                    scenario_data, scenario_country, train_cols
+                )
                 pred_temp = scenario_model.predict(scenario_X)[0]
-                
-                # Baseline prediction
-                baseline_data = filtered_df[filtered_df["Year"] == filtered_df["Year"].max()].iloc[0].to_dict()
-                baseline_X, _ = build_features(pd.DataFrame([baseline_data]), include_target=False)
-                baseline_X = align_features(baseline_X, full_X_scenario.columns.tolist())
+
+                # ── Baseline prediction (same country, same year) ─────────
+                baseline_dict = baseline_row.to_dict()
+                baseline_X = build_scenario_row(
+                    baseline_dict, scenario_country, train_cols
+                )
                 baseline_temp = scenario_model.predict(baseline_X)[0]
-                
+
                 temp_diff = pred_temp - baseline_temp
-                
-                # Display results
+
+                # ── Display results ───────────────────────────────────────
                 st.markdown("---")
                 st.subheader("📊 Scenario Results")
-                
-                results_col1, results_col2, results_col3 = st.columns(3)
-                with results_col1:
-                    st.metric("Scenario Name", scenario_name)
-                with results_col2:
+
+                r1, r2_col, r3 = st.columns(3)
+                with r1:
+                    st.metric("Country", f"{get_country_emoji(scenario_country)} {scenario_country}")
+                with r2_col:
                     st.metric("Target Year", int(scenario_year))
-                with results_col3:
-                    st.metric("Temperature Change", f"{temp_diff:+.2f}°C")
-                
+                with r3:
+                    st.metric(
+                        "Temperature Change",
+                        f"{temp_diff:+.2f} °C",
+                        delta=f"{temp_diff:+.2f} °C",
+                        delta_color="inverse",
+                    )
+
                 st.info(
-                    f"**{scenario_name} ({int(scenario_year)})**\n\n"
-                    f"📍 Baseline estimate: {baseline_temp:.2f}°C\n"
-                    f"🎯 Scenario estimate: {pred_temp:.2f}°C\n"
-                    f"📈 Difference: {temp_diff:+.2f}°C\n\n"
-                    f"**Interpretation:** Based on historical correlations between environmental factors and temperature, "
-                    f"your scenario suggests a {abs(temp_diff):.2f}°C {'increase' if temp_diff > 0 else 'decrease'} compared to baseline. "
-                    f"Remember: This shows correlations, not causation. Real climate outcomes depend on many interconnected factors."
+                    f"**{scenario_name} — {scenario_country} ({int(scenario_year)})**\n\n"
+                    f"📍 Baseline estimate ({baseline_year}): {baseline_temp:.2f} °C\n"
+                    f"🎯 Scenario estimate ({int(scenario_year)}): {pred_temp:.2f} °C\n"
+                    f"📈 Difference: {temp_diff:+.2f} °C\n\n"
+                    f"**Interpretation:** The model predicts a {abs(temp_diff):.2f} °C "
+                    f"{'increase' if temp_diff > 0 else 'decrease'} relative to the "
+                    f"{baseline_year} baseline for {scenario_country}. Most of this "
+                    f"shift comes from the Year trend; environmental-factor adjustments "
+                    f"contribute smaller incremental changes. This reflects correlations "
+                    f"in the training data, not causal predictions."
                 )
-                
-                # Comparison visualization
+
+                # ── Comparison bar chart ──────────────────────────────────
                 comparison_data = pd.DataFrame({
-                    "Scenario": ["Current Baseline", scenario_name],
-                    "Temperature (°C)": [baseline_temp, pred_temp]
+                    "Scenario": [f"Baseline ({baseline_year})", scenario_name],
+                    "Temperature (°C)": [baseline_temp, pred_temp],
                 })
-                
-                fig = px.bar(comparison_data, x="Scenario", y="Temperature (°C)", color="Scenario", text_auto=True)
+
+                fig = px.bar(
+                    comparison_data,
+                    x="Scenario",
+                    y="Temperature (°C)",
+                    color="Scenario",
+                    text_auto=".2f",
+                )
+                fig.update_layout(showlegend=False)
                 st.plotly_chart(fig, use_container_width=True)
                 st.caption(
-                    "💡 **Reading this chart:** The left bar is the current baseline estimate; the right bar is your scenario. "
-                    "If your scenario bar is lower, the adjustments you made are associated with cooler temperatures."
+                    "💡 **Reading this chart:** The left bar is the baseline estimate "
+                    "for the selected country's most recent year; the right bar is your "
+                    "scenario. A lower bar means the adjustments you made are associated "
+                    "with cooler temperatures in the model."
                 )
+
+                # ── Feature-contribution breakdown ────────────────────────
+                with st.expander("🔍 What drove this change?", expanded=True):
+                    feature_cols_ordered = [
+                        "Year",
+                        "CO2_Emissions_tons_per_capita",
+                        "Sea_Level_Rise_mm",
+                        "Rainfall_mm",
+                        "Population",
+                        "Renewable_Energy_pct",
+                        "Extreme_Weather_Events",
+                        "Forest_Area_pct",
+                    ]
+                    contrib_records = []
+                    for i, feat in enumerate(feature_cols_ordered):
+                        sc_val = float(scenario_X.iloc[0][feat])
+                        bl_val = float(baseline_X.iloc[0][feat])
+                        coef = scenario_model.coef_[i]
+                        delta_val = sc_val - bl_val
+                        contribution = delta_val * coef
+                        label = LABEL_MAP.get(feat, feat)
+                        contrib_records.append({
+                            "Feature": label,
+                            "Baseline": bl_val,
+                            "Scenario": sc_val,
+                            "Change": delta_val,
+                            "Coefficient": coef,
+                            "Temp contribution (°C)": contribution,
+                        })
+                    contrib_df = pd.DataFrame(contrib_records)
+                    st.dataframe(
+                        contrib_df.style.format({
+                            "Baseline": "{:.2f}",
+                            "Scenario": "{:.2f}",
+                            "Change": "{:+.2f}",
+                            "Coefficient": "{:.6f}",
+                            "Temp contribution (°C)": "{:+.4f}",
+                        }),
+                        use_container_width=True,
+                        hide_index=True,
+                    )
+                    st.caption(
+                        "Each row shows how much a single feature drove the temperature "
+                        "change. **Temp contribution = Change × Coefficient**. Year "
+                        "typically dominates because the model captures a global warming "
+                        "trend of ~0.03 °C per year."
+                    )
 

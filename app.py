@@ -497,6 +497,80 @@ if st.session_state.current_page == "Executive Summary":
         "rigorous impact assessments before implementing major policy changes."
     )
 
+    # ── Visual Highlights: narrative summary of what the charts across the dashboard reveal ──
+    st.subheader("📊 Visual Highlights")
+    st.markdown(
+        "The charts throughout this dashboard tell a consistent story about the state of our "
+        "environment between {start} and {end}. Here is what they reveal.".format(
+            start=int(summary_first["Year"]), end=int(summary_last["Year"])
+        )
+    )
+
+    # Temperature narrative
+    st.markdown("**Temperature trends**")
+    if temp_delta > 0.3:
+        st.markdown(
+            "The temperature line chart on the *Overview* page shows a clear upward trajectory. "
+            f"Average global temperature rose by roughly {temp_delta:.2f} °C over the observed period. "
+            "This warming is not uniform — the per-country box plots on the *Data Overview* page reveal "
+            "that some nations experienced much sharper increases than others, with the widest boxes "
+            "indicating the most variable temperature records."
+        )
+    elif temp_delta > 0:
+        st.markdown(
+            "The temperature line chart on the *Overview* page shows a modest upward drift of "
+            f"about {temp_delta:.2f} °C. While not dramatic in isolation, even small sustained "
+            "changes can compound over time. The histograms on the *Data Overview* page confirm "
+            "that temperature values are distributed roughly symmetrically around the mean."
+        )
+    else:
+        st.markdown(
+            "The temperature line chart on the *Overview* page shows a stable or slightly "
+            "cooling trend over the period. The histograms on *Data Overview* confirm that "
+            "temperature values cluster tightly around the global mean."
+        )
+
+    # Emissions & renewables narrative
+    st.markdown("**Emissions and energy**")
+    st.markdown(
+        "The scatter plots on the *Explore Patterns* page illustrate two important relationships. "
+        "First, the CO₂-vs-temperature scatter shows that cold-climate industrial nations (e.g. Russia, Canada) "
+        "tend to have both high emissions and low temperatures, which is why the overall correlation is "
+        "negative — geography confounds the relationship rather than emissions causing cooling. "
+        "Second, the renewables-vs-emissions scatter shows a downward trend: countries with a higher share "
+        "of renewable energy generally produce fewer emissions per person, supporting the case for continued "
+        "investment in clean energy."
+    )
+
+    # Extreme weather narrative
+    st.markdown("**Extreme weather events**")
+    if events_delta > 0:
+        st.markdown(
+            "The extreme-weather trend line on the *Explore Patterns* page slopes upward, indicating "
+            "that the average number of extreme weather events across countries has grown over time. "
+            "The bar chart on the *Overview* page spotlights which nations bore the heaviest burden in the "
+            "most recent year. Together, these visuals underline the growing need for disaster preparedness "
+            "and climate-resilient infrastructure."
+        )
+    else:
+        st.markdown(
+            "The extreme-weather trend line on the *Explore Patterns* page is relatively flat, suggesting "
+            "no dramatic increase in reported events. However, this may partly reflect reporting limitations "
+            "rather than genuine stability."
+        )
+
+    # Forecast narrative
+    st.markdown("**Forecasting and uncertainty**")
+    st.markdown(
+        "The *Modeling & Prediction* page extends historical trends into 2025–2029 using a simple "
+        "per-country linear model. The confidence-interval bands around each forecast line show how "
+        "certain (or uncertain) those projections are. Narrow bands suggest a stable, predictable history; "
+        "wide bands warn that the country's temperature has been volatile and forecasts should be treated "
+        "with extra caution. These forecasts assume current trends continue unchanged — any shift in "
+        "policy, technology, or global emissions would alter the trajectory."
+    )
+    st.markdown("---")
+
     st.subheader("🌍 Country-Specific Findings")
     st.markdown(
         "Below is a detailed breakdown by country showing where the biggest changes are happening. "
@@ -653,48 +727,101 @@ elif st.session_state.current_page == "Data Overview":
 
     st.subheader("📊 Variable Distributions (Histograms)")
     st.markdown(
-        "**What this shows:** How each environmental variable is spread across all country-year records. "
-        "These histograms come from **Notebook 02**. Symmetric shapes mean most values cluster around the middle; "
-        "skewed shapes mean some records are much higher or lower than typical."
+        "**What this shows:** Each small chart below is a histogram — it groups all country-year records into "
+        "bins and counts how many fall in each range. The red dashed line marks the overall average (mean).\n\n"
+        "**How to read them:** A tall bar means many observations fall in that range. If the chart looks like a "
+        "bell shape, most values are close to the average. If it has a long tail stretching to the right, a few "
+        "records are much higher than typical (right-skewed). If the tail stretches left, a few are much lower "
+        "(left-skewed). Wider spread means bigger differences between countries.\n\n"
+        "These distributions (from **Notebook 02**) help decide which statistical tests are appropriate in later analysis."
     )
     hist_cols_list = ["Avg_Temperature_degC", "CO2_Emissions_tons_per_capita", "Sea_Level_Rise_mm",
                       "Rainfall_mm", "Renewable_Energy_pct", "Extreme_Weather_Events", "Forest_Area_pct"]
-    for col_name in hist_cols_list:
-        if col_name in clean_df.columns:
-            hist_fig = px.histogram(
-                clean_df, x=col_name, nbins=20,
-                title=LABEL_MAP.get(col_name, col_name),
-                labels=LABEL_MAP,
-            )
-            hist_fig.update_layout(height=300, margin=dict(t=40, b=20))
-            st.plotly_chart(hist_fig, use_container_width=True)
+    # Filter to columns that actually exist
+    hist_cols_list = [c for c in hist_cols_list if c in clean_df.columns]
+    n_cols = 3
+    n_rows = -(-len(hist_cols_list) // n_cols)  # ceiling division
+
+    from plotly.subplots import make_subplots
+    hist_fig = make_subplots(
+        rows=n_rows, cols=n_cols,
+        subplot_titles=[LABEL_MAP.get(c, c.replace("_", " ")) for c in hist_cols_list],
+        horizontal_spacing=0.08, vertical_spacing=0.12,
+    )
+    for idx, col_name in enumerate(hist_cols_list):
+        r = idx // n_cols + 1
+        c = idx % n_cols + 1
+        col_data = clean_df[col_name].dropna()
+        col_mean = col_data.mean()
+        hist_fig.add_trace(
+            go.Histogram(x=col_data, nbinsx=20, marker_color="steelblue",
+                         marker_line_color="black", marker_line_width=1,
+                         opacity=0.7, showlegend=False),
+            row=r, col=c,
+        )
+        # Red dashed mean line (matching notebook style)
+        hist_fig.add_vline(
+            x=col_mean, line_dash="dash", line_color="red", line_width=1.5,
+            annotation_text=f"Mean: {col_mean:.1f}",
+            annotation_font_size=10, annotation_font_color="red",
+            row=r, col=c,
+        )
+    hist_fig.update_layout(
+        title_text="Distribution of Numeric Variables", title_font_size=16, title_x=0.5,
+        height=300 * n_rows, margin=dict(t=60, b=30, l=40, r=40),
+    )
+    st.plotly_chart(hist_fig, use_container_width=True)
     st.caption(
-        "💡 **Interpretation:** Skewed distributions (long tail to one side) are common for emissions and population. "
-        "Temperature tends to be more symmetric. Wide spread means large differences between countries."
+        "💡 **Quick takeaway:** Temperature is roughly bell-shaped, meaning most countries sit near the global average. "
+        "CO₂ emissions and rainfall are right-skewed — a handful of high-emitting or very wet countries pull the tail out. "
+        "Renewable energy is also skewed because only a few countries have pushed their share above 50 %."
     )
 
     st.markdown("---")
 
     st.subheader("📦 Box Plots by Country")
     st.markdown(
-        "**What this shows:** The range of values for key metrics broken down by country (from **Notebook 02**). "
-        "The box covers the middle 50%; the line inside is the median. Dots outside the whiskers are outliers."
+        "**What this shows:** Each box represents one country's data across all available years. "
+        "The bottom edge of the box is the 25th percentile, the top edge is the 75th percentile, and the "
+        "horizontal line inside is the median (middle value). Whiskers extend to 1.5× the box height; "
+        "dots beyond them are outliers — unusually high or low observations.\n\n"
+        "**How to read them:** A tall, stretched box means that country's values varied a lot over the years. "
+        "A short, compact box means the metric stayed relatively stable. If one country's box sits much higher "
+        "or lower than the rest, it is an outlier compared to other nations for that metric."
     )
     box_metrics = ["Avg_Temperature_degC", "CO2_Emissions_tons_per_capita",
                    "Renewable_Energy_pct", "Extreme_Weather_Events"]
-    for bm in box_metrics:
-        if bm in clean_df.columns:
-            box_fig = px.box(
-                clean_df, x="Country", y=bm,
-                title=f"{LABEL_MAP.get(bm, bm)} by Country",
-                labels=LABEL_MAP,
+    box_metrics = [bm for bm in box_metrics if bm in clean_df.columns]
+    from plotly.subplots import make_subplots
+    box_fig = make_subplots(
+        rows=2, cols=2,
+        subplot_titles=[LABEL_MAP.get(bm, bm.replace("_", " ")) for bm in box_metrics],
+        horizontal_spacing=0.08, vertical_spacing=0.14,
+    )
+    countries_sorted = sorted(clean_df["Country"].unique())
+    for idx, bm in enumerate(box_metrics):
+        r = idx // 2 + 1
+        c = idx % 2 + 1
+        for country in countries_sorted:
+            vals = clean_df.loc[clean_df["Country"] == country, bm].dropna()
+            box_fig.add_trace(
+                go.Box(y=vals, name=country, showlegend=False,
+                       marker_color="steelblue", line_color="steelblue"),
+                row=r, col=c,
             )
-            box_fig.update_layout(height=400, xaxis_tickangle=-45)
-            st.plotly_chart(box_fig, use_container_width=True)
+        box_fig.update_xaxes(tickangle=-90, tickfont_size=8, row=r, col=c)
+        box_fig.update_yaxes(title_text=LABEL_MAP.get(bm, bm.replace("_", " ")),
+                             title_font_size=9, row=r, col=c)
+    box_fig.update_layout(
+        title_text="Key Metrics by Country", title_font_size=16, title_x=0.5,
+        height=900, margin=dict(t=60, b=80, l=50, r=30),
+    )
+    st.plotly_chart(box_fig, use_container_width=True)
     st.caption(
-        "💡 **Key takeaway:** Wide boxes mean high variability within that country over time. "
-        "CO2 emissions and renewable energy show the biggest differences between nations, reflecting "
-        "different development levels and energy policies."
+        "💡 **Key takeaway:** CO₂ emissions boxes vary enormously — industrialised nations like the United States "
+        "and Australia sit far above developing nations like India and Nigeria. Renewable energy shows a similar "
+        "spread, reflecting different stages of energy transition. Temperature boxes highlight geographic differences "
+        "(tropical vs. temperate countries), while extreme-weather boxes reveal which nations face the greatest hazard exposure."
     )
 
     st.markdown("---")
@@ -892,8 +1019,11 @@ elif st.session_state.current_page == "Overview":
 
     st.subheader("📈 Temperature Over Time")
     st.markdown(
-        "**What to look for:** Is the line going up or down? An upward trend shows warming; a downward trend shows cooling. "
-        "Even small year-to-year changes can cause big impacts when repeated over decades."
+        "**What this shows:** The line plots the global average temperature for each year in your selection. "
+        "An upward slope indicates a warming trend; a downward slope indicates cooling.\n\n"
+        "**How to read it:** Focus on the overall direction rather than individual year-to-year dips, which are "
+        "caused by natural variability. Even a gradual upward tilt of 0.5 °C over 25 years can disrupt agriculture, "
+        "water supplies, and ecosystems."
     )
     line_fig = px.line(
         grouped,
@@ -912,8 +1042,11 @@ elif st.session_state.current_page == "Overview":
     latest_year = int(grouped["Year"].max())
     st.subheader("⛈️ Extreme Weather Events (Latest Year)")
     st.markdown(
-        "**What this shows:** Which countries experienced the most extreme weather (hurricanes, floods, heatwaves, etc.) "
-        f"in {latest_year}. Longer bars = more events = higher climate impact and greater need for disaster preparedness."
+        f"**What this shows:** A horizontal bar chart ranking the top 10 countries by the number of extreme weather "
+        f"events (hurricanes, floods, droughts, heatwaves) recorded in **{latest_year}**.\n\n"
+        "**How to read it:** Longer bars mean more events. Countries at the top of the chart face the greatest "
+        "exposure to climate-related hazards and may benefit most from early-warning systems, disaster preparedness, "
+        "and resilience investments."
     )
     latest_df = filtered_df[filtered_df["Year"] == latest_year]
     top_events = latest_df.nlargest(10, "Extreme_Weather_Events")
@@ -988,8 +1121,12 @@ elif st.session_state.current_page == "Explore Patterns":
 
     st.subheader("🌍 Emissions vs. Temperature")
     st.markdown(
-        "**What to look for:** Do points cluster along a diagonal line going up? That would suggest higher emissions are associated with higher temperatures. "
-        "Each colored dot = one country in one year. Dots farther right have higher emissions; dots higher have warmer temperatures."
+        "**What this shows:** A scatter plot where every dot is one country in one year. The horizontal axis is "
+        "per-capita CO₂ emissions; the vertical axis is average temperature. Colours distinguish countries.\n\n"
+        "**How to read it:** If dots form an upward diagonal, higher emissions are associated with warmer temperatures. "
+        "If they form a downward diagonal, the opposite is true. If they're scattered randomly, there is no clear "
+        "relationship. In this dataset the overall correlation is *negative* because cold-climate industrial nations "
+        "(e.g. Russia, Canada) emit a lot but are naturally cold."
     )
     scatter_fig = px.scatter(
         filtered_df,
@@ -1010,8 +1147,11 @@ elif st.session_state.current_page == "Explore Patterns":
 
     st.subheader("⚡ Renewable Energy vs. Emissions")
     st.markdown(
-        "**What to look for:** Do dots form a line going down-right? That would suggest higher renewable energy is associated with lower emissions. "
-        "Countries farther right use more renewable energy; countries higher have more emissions. If the trend goes down-right, renewables may be helping reduce emissions."
+        "**What this shows:** Each dot plots a country-year's renewable energy share (horizontal) against its "
+        "per-capita CO₂ emissions (vertical). Colours distinguish countries.\n\n"
+        "**How to read it:** A downward-sloping cloud of dots means that countries with more renewable energy "
+        "tend to emit less CO₂ per person. Countries in the top-left corner rely heavily on fossil fuels; those "
+        "in the bottom-right have transitioned to cleaner energy."
     )
     scatter_fig2 = px.scatter(
         filtered_df,
@@ -1030,8 +1170,11 @@ elif st.session_state.current_page == "Explore Patterns":
 
     st.subheader("🌧️ Rainfall Patterns")
     st.markdown(
-        "**What this shows:** How rainfall is distributed across all countries and years. A peak on the left means most places get less rain; "
-        "a peak on the right means more rain. Extreme rainfall can cause floods; too little causes droughts."
+        "**What this shows:** A histogram counting how many country-year records fall into each rainfall range.\n\n"
+        "**How to read it:** A tall bar on the left means many observations have low rainfall (dry climates); a tall bar "
+        "on the right means many have high rainfall (tropical or monsoon climates). A wide, flat shape suggests rainfall "
+        "varies greatly across the dataset. Extremely high values may signal flood risk, while very low values may "
+        "indicate drought-prone regions."
     )
     hist_fig = px.histogram(
         filtered_df,
@@ -1041,12 +1184,16 @@ elif st.session_state.current_page == "Explore Patterns":
         labels=LABEL_MAP,
     )
     st.plotly_chart(hist_fig, use_container_width=True)
-    st.caption("📊 The bars show how many observations (country-year combinations) fall into each rainfall range.")
+    st.caption("� The bars show how many observations (country-year combinations) fall into each rainfall range.")
 
     st.subheader("⛈️ Extreme Weather Events Over Time")
     st.markdown(
-        "**What to look for:** Is the line going up, down, or staying flat? An upward trend means extreme weather events (hurricanes, floods, droughts, heatwaves) "
-        "are becoming more frequent. This directly relates to Hypothesis 3: that extreme events have increased from 2000 to 2024."
+        "**What this shows:** A line chart plotting the average number of extreme weather events per year across "
+        "all selected countries.\n\n"
+        "**How to read it:** An upward slope means extreme events are becoming more frequent over time — consistent "
+        "with Hypothesis 3. A flat line would suggest no change; a downward slope would suggest events are decreasing. "
+        "Note that part of any upward trend may reflect improved monitoring and reporting in recent decades, not "
+        "just actual increases."
     )
     events_trend = filtered_df.groupby("Year", as_index=False)["Extreme_Weather_Events"].mean()
     trend_fig = px.line(
@@ -1066,8 +1213,11 @@ elif st.session_state.current_page == "Explore Patterns":
 
     st.subheader("🌳 Forest Area vs. Extreme Weather Events")
     st.markdown(
-        "**What to look for:** Does the scatter plot show a clear downward trend? That would suggest forests help reduce extreme weather. "
-        "If dots are scattered randomly, it means forest coverage alone doesn't strongly predict extreme weather events at the country level (Hypothesis 4)."
+        "**What this shows:** Each dot plots a country-year's forest coverage (horizontal) against its count of "
+        "extreme weather events (vertical). Colours distinguish countries.\n\n"
+        "**How to read it:** A clear downward diagonal would suggest more forest coverage is associated with fewer "
+        "extreme events. In practice the dots are scattered with no strong pattern, meaning forest area alone does not "
+        "reliably predict how many extreme events a country experiences (Hypothesis 4)."
     )
     scatter_fig3 = px.scatter(
         filtered_df,
@@ -1257,8 +1407,12 @@ elif st.session_state.current_page == "Modeling & Prediction":
                 if not ci_filtered.empty:
                     st.subheader("📊 Forecast Confidence Intervals")
                     st.markdown(
-                        "**What this shows:** The shaded area represents the 95% confidence interval from **Notebook 04** bootstrap resampling. "
-                        "The true future temperature is likely to fall within this range. Wider bands = more uncertainty."
+                        "**What this shows:** Each chart below plots a country's forecast line (blue) with a shaded band "
+                        "representing the 95 % confidence interval, calculated via bootstrap resampling in **Notebook 04**.\n\n"
+                        "**How to read them:** The shaded area is the range within which the true temperature is likely to "
+                        "fall. If the band is narrow, the model is confident in its projection. If the band is wide, the "
+                        "country's historical temperature has been volatile and the forecast carries more uncertainty. "
+                        "Any point outside the band would be a surprising outcome given past trends."
                     )
                     ci_countries = ci_filtered["Country"].unique()
                     for ci_country in ci_countries[:6]:  # Limit to 6 to keep page manageable
@@ -1445,7 +1599,13 @@ elif st.session_state.current_page == "Analytics Hub":
     # Correlation Heatmap
     st.markdown("---")
     st.subheader("🔗 Metric Correlations")
-    st.markdown("**What to look for:** Values closer to 1.0 or -1.0 show strong relationships. Values near 0 show no relationship.")
+    st.markdown(
+        "**What this shows:** A heatmap of Pearson correlations between every pair of environmental metrics. "
+        "Each cell contains a number from −1 to +1.\n\n"
+        "**How to read it:** **Red cells** (positive) mean the two variables rise together. **Blue cells** (negative) "
+        "mean one goes up while the other goes down. **White cells** (near zero) indicate no linear relationship. "
+        "Values above ±0.7 are strong; ±0.3–0.7 are moderate; below ±0.3 are weak."
+    )
     
     corr_matrix = calculate_correlation_matrix(filtered_df)
     corr_fig = go.Figure(data=go.Heatmap(
@@ -1469,7 +1629,12 @@ elif st.session_state.current_page == "Analytics Hub":
     # Anomaly Detection
     st.markdown("---")
     st.subheader("🚨 Anomaly Detection")
-    st.markdown("**What this shows:** Data points that are unusually high or low compared to their country's typical values.")
+    st.markdown(
+        "**What this shows:** Records where a metric is more than 2 standard deviations away from that country's "
+        "own average — in other words, values that are unusually high or low for that particular nation.\n\n"
+        "**How to read it:** Each row in the table is an anomaly. A high anomaly may signal a one-off event "
+        "(e.g. a heatwave year) or a data-quality issue worth investigating."
+    )
     
     anomaly_col = st.selectbox("Select metric to check for anomalies", 
                               ["Avg_Temperature_degC", "CO2_Emissions_tons_per_capita", "Extreme_Weather_Events"])
@@ -1520,6 +1685,11 @@ elif st.session_state.current_page == "Comparison Tool":
         else:
             # Latest values comparison
             st.subheader("📊 Latest Year Comparison")
+            st.markdown(
+                "Each bar chart below compares the selected countries on one metric for the most recent year "
+                "in the dataset. Taller bars represent higher values. Use these side-by-side comparisons to "
+                "spot leaders and laggards at a glance."
+            )
             latest_year = comparison_df["Year"].max()
             latest_data = comparison_df[comparison_df["Year"] == latest_year].sort_values("Country")
             
@@ -1543,6 +1713,11 @@ elif st.session_state.current_page == "Comparison Tool":
             
             # Trends comparison
             st.subheader("📈 Trends Over Time")
+            st.markdown(
+                "Select a metric below to see how each country's value has evolved year by year. "
+                "Converging lines mean countries are becoming more similar; diverging lines mean the gap "
+                "is widening. Steeper slopes indicate faster change."
+            )
             metric_choice = st.selectbox("Select metric to track", metrics_to_compare)
             
             trend_fig = px.line(

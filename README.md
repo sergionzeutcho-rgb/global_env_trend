@@ -254,6 +254,28 @@ Stakeholders have raw environmental data, but they need clear visualizations and
   - Not shared with third parties
   - Deletable by project owner as needed
 
+### GDPR Compliance
+
+Although this project does not process personal data, we have assessed it against the EU General Data Protection Regulation (GDPR) to demonstrate awareness and good practice.
+
+* **Lawful Basis (Article 6):** Not applicable. The dataset contains only aggregated, country-level environmental statistics. No natural person can be identified directly or indirectly from the data, so GDPR obligations relating to a lawful basis for processing do not arise.
+
+* **Data Minimisation (Article 5(1)(c)):** The dataset collects only the environmental indicators necessary to answer the stated business requirements (temperature, emissions, renewable energy, extreme weather, forest coverage). No surplus data is gathered or retained.
+
+* **Storage Limitation (Article 5(1)(e)):** Data files are versioned under `data/processed/v1/`. Old versions can be deleted once superseded, and no data is kept beyond what is needed for reproducibility and assessment purposes.
+
+* **Data Subject Rights (Articles 15–22):** Because no personal data is processed, rights such as access, rectification, erasure, and portability do not apply. If the project were extended to include individual-level data in future, a full Data Protection Impact Assessment (DPIA) would be conducted before processing begins.
+
+* **International Transfers (Chapter V):** The dataset is hosted on GitHub (servers may be located outside the EEA). Since no personal data is involved, Standard Contractual Clauses and transfer impact assessments are not required. If personal data were introduced, appropriate safeguards would be implemented.
+
+* **Security Measures (Article 32):** Even though GDPR does not mandate it for non-personal data, we apply proportionate security practices:
+  - Repository access controlled via GitHub permissions
+  - Sensitive credentials (e.g. `kaggle.json`) excluded via `.gitignore`
+  - No API keys or tokens stored in source code
+  - Local development uses a virtual environment isolated from system Python
+
+* **Summary:** This project is **GDPR-exempt** because it processes no personal data whatsoever. Nevertheless, the principles of data minimisation, purpose limitation, and security by design have been followed throughout as a matter of best practice and to demonstrate readiness for projects that do involve personal data.
+
 ### Potential Bias and Limitations
 
 * **Measurement Bias:** We acknowledge systematic differences in environmental monitoring:

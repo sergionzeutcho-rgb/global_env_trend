@@ -597,6 +597,72 @@ if st.session_state.current_page == "Executive Summary":
     )
     st.markdown("---")
 
+    # ── Interactive World Map ─────────────────────────────────────────────
+    st.subheader("🗺️ Global Snapshot")
+    st.markdown(
+        "**What this shows:** A world map highlighting the 19 countries in the dataset, coloured by "
+        "the metric you select. Darker shading indicates higher values.\n\n"
+        "**How to read it:** Hover over a country to see its exact value. Grey countries are not in the "
+        "dataset. Use the dropdown to switch between temperature, emissions, renewables, or extreme events."
+    )
+
+    # ISO-3166 alpha-3 codes for Plotly choropleth
+    COUNTRY_ISO = {
+        "Australia": "AUS", "Brazil": "BRA", "Canada": "CAN", "China": "CHN",
+        "France": "FRA", "Germany": "DEU", "India": "IND", "Indonesia": "IDN",
+        "Italy": "ITA", "Japan": "JPN", "Mexico": "MEX", "Nigeria": "NGA",
+        "Russia": "RUS", "South Africa": "ZAF", "South Korea": "KOR",
+        "Spain": "ESP", "Thailand": "THA", "United Kingdom": "GBR",
+        "United States": "USA",
+    }
+
+    map_metric = st.selectbox(
+        "Select metric to display on map",
+        ["Avg_Temperature_degC", "CO2_Emissions_tons_per_capita",
+         "Renewable_Energy_pct", "Extreme_Weather_Events"],
+        format_func=lambda x: LABEL_MAP.get(x, x),
+        key="exec_map_metric",
+    )
+
+    map_year = int(filtered_df["Year"].max())
+    map_data = filtered_df[filtered_df["Year"] == map_year].copy()
+    map_data["iso_alpha"] = map_data["Country"].map(COUNTRY_ISO)
+    map_data = map_data.dropna(subset=["iso_alpha"])
+
+    if not map_data.empty:
+        map_fig = px.choropleth(
+            map_data,
+            locations="iso_alpha",
+            color=map_metric,
+            hover_name="Country",
+            hover_data={
+                map_metric: ":.2f",
+                "iso_alpha": False,
+            },
+            color_continuous_scale="YlOrRd" if map_metric != "Renewable_Energy_pct" else "YlGn",
+            labels=LABEL_MAP,
+            title=f"{LABEL_MAP.get(map_metric, map_metric)} by Country ({map_year})",
+        )
+        map_fig.update_layout(
+            geo=dict(
+                showframe=False,
+                showcoastlines=True,
+                projection_type="natural earth",
+            ),
+            height=450,
+            margin=dict(t=50, b=10, l=0, r=0),
+        )
+        st.plotly_chart(map_fig, use_container_width=True)
+        st.caption(
+            f"💡 Showing data for **{len(map_data)}** countries in **{map_year}**. "
+            "Grey areas have no data in this dataset. Colour intensity reflects the selected metric — "
+            "darker shading means higher values."
+        )
+    else:
+        st.info("No map data available for the current filters.")
+
+    st.markdown("---")
+
     st.subheader("🌍 Country-Specific Findings")
     st.markdown(
         "Below is a detailed breakdown by country showing where the biggest changes are happening. "

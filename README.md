@@ -1,5 +1,27 @@
 # Global Environmental Trends (2000–2024)
 
+## Table of Contents
+
+1. [Project Overview](#project-overview)
+2. [Dataset Content](#dataset-content)
+3. [Business Requirements](#business-requirements)
+4. [Hypothesis and How to Validate](#hypothesis-and-how-to-validate)
+5. [Rationale: Business Requirements → Data Visualisations](#the-rationale-to-map-the-business-requirements-to-the-data-visualisations)
+6. [Dashboard Design](#dashboard-design)
+7. [Project Hypothesis and Validation](#project-hypothesis-and-validation)
+8. [Data Ethics and Privacy](#data-ethics-and-privacy)
+9. [Project Structure](#project-structure)
+10. [Methodology and Workflow](#methodology-and-workflow)
+11. [Unfixed Bugs](#unfixed-bugs)
+12. [Prerequisites](#prerequisites)
+13. [Running the Dashboard Locally](#running-the-dashboard-locally)
+14. [Deployment](#deployment)
+15. [Main Data Analysis and Libraries](#main-data-analysis-and-libraries)
+16. [Credits](#credits)
+17. [Acknowledgements](#acknowledgements)
+
+---
+
 ## Project Overview
 
 This capstone project demonstrates comprehensive data analytics skills applied to environmental climate data. The project covers the complete data analytics lifecycle: from business understanding and data quality assessment, through exploratory analysis and hypothesis testing, to predictive modeling and interactive dashboard deployment.

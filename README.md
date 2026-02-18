@@ -98,6 +98,10 @@ Stakeholders have raw environmental data, but they need clear visualizations and
 
 ## Dashboard Design
 
+### Why Streamlit?
+
+The dashboard is built with **Streamlit**, chosen over Tableau and Power BI because it is a free, open-source Python framework that allows the entire analytics pipeline — data processing, statistical testing, machine learning, and interactive visualisation — to live in a single codebase, making it easy to deploy as a standalone web app on Heroku without requiring users to install any software or hold a paid licence.
+
 ### Global Quick-Navigation Bar
 * A persistent icon-based navigation bar appears at the top of every page
 * 8 buttons with descriptive icons (📝 📊 📈 🔍 🤖 📊 🔄 ⚙️) allow one-click access to any page

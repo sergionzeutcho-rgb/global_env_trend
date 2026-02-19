@@ -11,6 +11,7 @@ import plotly.graph_objects as go
 import plotly.io as pio
 import streamlit as st
 from scipy import stats
+from plotly.subplots import make_subplots
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
@@ -216,7 +217,7 @@ ENV_COLORS = [
     "#1B5E20",  # dark green
     "#FF8F00",  # dark amber
     "#283593",  # indigo
-    "#2E7D32",  # green (repeat for 19th)
+    "#795548",  # warm brown
     "#00BFA5",  # mint
 ]
 
@@ -365,6 +366,11 @@ country_options = ["All"] + all_countries
 
 # Countries filter – Streamlit multiselect has built-in type-to-search
 st.sidebar.markdown("**📍 Countries** (Select or Search)")
+st.sidebar.caption(
+    "Choose one or more countries to focus the dashboard. "
+    "Leave **All** selected to view every country. "
+    "The filter applies to all pages except the Scenario Builder, which has its own country selector."
+)
 selected_countries = st.sidebar.multiselect(
     "Select countries",
     country_options,
@@ -929,7 +935,6 @@ elif st.session_state.current_page == "Data Overview":
     n_cols = 3
     n_rows = -(-len(hist_cols_list) // n_cols)  # ceiling division
 
-    from plotly.subplots import make_subplots
     hist_fig = make_subplots(
         rows=n_rows, cols=n_cols,
         subplot_titles=[LABEL_MAP.get(c, c.replace("_", " ")) for c in hist_cols_list],
@@ -979,7 +984,6 @@ elif st.session_state.current_page == "Data Overview":
     box_metrics = ["Avg_Temperature_degC", "CO2_Emissions_tons_per_capita",
                    "Renewable_Energy_pct", "Extreme_Weather_Events"]
     box_metrics = [bm for bm in box_metrics if bm in clean_df.columns]
-    from plotly.subplots import make_subplots
     box_fig = make_subplots(
         rows=2, cols=2,
         subplot_titles=[LABEL_MAP.get(bm, bm.replace("_", " ")) for bm in box_metrics],
@@ -989,11 +993,12 @@ elif st.session_state.current_page == "Data Overview":
     for idx, bm in enumerate(box_metrics):
         r = idx // 2 + 1
         c = idx % 2 + 1
-        for country in countries_sorted:
+        for ci_idx, country in enumerate(countries_sorted):
             vals = clean_df.loc[clean_df["Country"] == country, bm].dropna()
             box_fig.add_trace(
                 go.Box(y=vals, name=country, showlegend=False,
-                       marker_color="#2E7D32", line_color="#1B5E20"),
+                       marker_color=ENV_COLORS[ci_idx % len(ENV_COLORS)],
+                       line_color=ENV_COLORS[ci_idx % len(ENV_COLORS)]),
                 row=r, col=c,
             )
         box_fig.update_xaxes(tickangle=-90, tickfont_size=8, row=r, col=c)
@@ -1432,28 +1437,28 @@ elif st.session_state.current_page == "Explore Patterns":
 
     h_results = []
     # H1
-    h1_data = clean_df.dropna(subset=["CO2_Emissions_tons_per_capita", "Avg_Temperature_degC"])
+    h1_data = filtered_df.dropna(subset=["CO2_Emissions_tons_per_capita", "Avg_Temperature_degC"])
     h1_r, h1_p = stats.pearsonr(h1_data["CO2_Emissions_tons_per_capita"], h1_data["Avg_Temperature_degC"])
     h_results.append({"Hypothesis": "H1: CO₂ vs Temperature", "Pearson r": f"{h1_r:.3f}",
                       "p-value": f"{h1_p:.4e}", "Significant (p<0.05)": "Yes" if h1_p < 0.05 else "No",
                       "Direction": "Negative" if h1_r < 0 else "Positive",
                       "Strength": "Strong" if abs(h1_r) > 0.7 else "Moderate" if abs(h1_r) > 0.3 else "Weak"})
     # H2
-    h2_data = clean_df.dropna(subset=["Renewable_Energy_pct", "CO2_Emissions_tons_per_capita"])
+    h2_data = filtered_df.dropna(subset=["Renewable_Energy_pct", "CO2_Emissions_tons_per_capita"])
     h2_r, h2_p = stats.pearsonr(h2_data["Renewable_Energy_pct"], h2_data["CO2_Emissions_tons_per_capita"])
     h_results.append({"Hypothesis": "H2: Renewables vs CO₂", "Pearson r": f"{h2_r:.3f}",
                       "p-value": f"{h2_p:.4e}", "Significant (p<0.05)": "Yes" if h2_p < 0.05 else "No",
                       "Direction": "Negative" if h2_r < 0 else "Positive",
                       "Strength": "Strong" if abs(h2_r) > 0.7 else "Moderate" if abs(h2_r) > 0.3 else "Weak"})
     # H3
-    h3_trend = clean_df.groupby("Year")["Extreme_Weather_Events"].mean().reset_index()
+    h3_trend = filtered_df.groupby("Year")["Extreme_Weather_Events"].mean().reset_index()
     h3_slope, h3_int, h3_r, h3_p, h3_se = stats.linregress(h3_trend["Year"], h3_trend["Extreme_Weather_Events"])
     h_results.append({"Hypothesis": "H3: Extreme Events Trend", "Pearson r": f"{h3_r:.3f}",
                       "p-value": f"{h3_p:.4e}", "Significant (p<0.05)": "Yes" if h3_p < 0.05 else "No",
                       "Direction": "Upward" if h3_slope > 0 else "Downward",
                       "Strength": "Strong" if abs(h3_r) > 0.7 else "Moderate" if abs(h3_r) > 0.3 else "Weak"})
     # H4
-    h4_data = clean_df.dropna(subset=["Forest_Area_pct", "Extreme_Weather_Events"])
+    h4_data = filtered_df.dropna(subset=["Forest_Area_pct", "Extreme_Weather_Events"])
     h4_r, h4_p = stats.pearsonr(h4_data["Forest_Area_pct"], h4_data["Extreme_Weather_Events"])
     h_results.append({"Hypothesis": "H4: Forest vs Extreme Events", "Pearson r": f"{h4_r:.3f}",
                       "p-value": f"{h4_p:.4e}", "Significant (p<0.05)": "Yes" if h4_p < 0.05 else "No",
@@ -1601,6 +1606,8 @@ elif st.session_state.current_page == "Modeling & Prediction":
                         "Any point outside the band would be a surprising outcome given past trends."
                     )
                     ci_countries = ci_filtered["Country"].unique()
+                    if len(ci_countries) > 6:
+                        st.info(f"📊 Showing 6 of {len(ci_countries)} selected countries. Filter to fewer countries to see the rest.")
                     for ci_country in ci_countries[:6]:  # Limit to 6 to keep page manageable
                         c_ci = ci_filtered[ci_filtered["Country"] == ci_country]
                         ci_width = (c_ci["Upper_95CI"] - c_ci["Lower_95CI"]).mean()
@@ -1799,10 +1806,11 @@ elif st.session_state.current_page == "Analytics Hub":
     )
     
     corr_matrix = calculate_correlation_matrix(filtered_df)
+    heatmap_labels = [LABEL_MAP.get(c, c.replace("_", " ")) for c in corr_matrix.columns]
     corr_fig = go.Figure(data=go.Heatmap(
         z=corr_matrix.values,
-        x=corr_matrix.columns,
-        y=corr_matrix.columns,
+        x=heatmap_labels,
+        y=heatmap_labels,
         colorscale='RdBu',
         zmid=0,
         text=np.round(corr_matrix.values, 2),
@@ -1843,9 +1851,10 @@ elif st.session_state.current_page == "Analytics Hub":
     # Download Analysis
     st.markdown("---")
     st.subheader("💾 Downloads")
+    download_cols = [c for c in anomaly_df.columns if c not in ("z_score", "is_anomaly")]
     st.download_button(
         "📥 Download Quality Report",
-        export_csv(anomaly_df),
+        export_csv(anomaly_df[download_cols]),
         "data_anomalies.csv",
         "text/csv"
     )
@@ -1892,7 +1901,7 @@ elif st.session_state.current_page == "Comparison Tool":
                     y=metric,
                     title=f"{LABEL_MAP.get(metric, metric.replace('_', ' '))} in {latest_year}",
                     color="Country",
-                    text_auto=True,
+                    text_auto=".2f",
                     labels=LABEL_MAP,
                 )
                 st.plotly_chart(fig, use_container_width=True)
@@ -2146,6 +2155,7 @@ elif st.session_state.current_page == "Scenario Builder":
                     x="Scenario",
                     y="Temperature (°C)",
                     color="Scenario",
+                    color_discrete_sequence=["#1565C0", "#2E7D32"],
                     text_auto=".2f",
                 )
                 fig.update_layout(showlegend=False)
@@ -2204,3 +2214,16 @@ elif st.session_state.current_page == "Scenario Builder":
                         "trend of ~0.03 °C per year."
                     )
 
+# ---------------------------------------------------------------------------
+# Footer
+# ---------------------------------------------------------------------------
+st.markdown("---")
+st.markdown(
+    "<div style='text-align:center; color:gray; font-size:0.85em;'>"
+    "🌿 Global Environmental Trends 2000–2024 | "
+    "Data: <a href='https://www.kaggle.com/datasets/adilshamim8/temperature' "
+    "style='color:gray;'>Kaggle — Adil Shamim</a> | "
+    "Built with Streamlit"
+    "</div>",
+    unsafe_allow_html=True,
+)

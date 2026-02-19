@@ -29,6 +29,4 @@ jobs:
         run: python -m py_compile app.py utils/modeling_helpers.py
 
       - name: Run tests
-        run: pytest -q
-        env:
-          PYTHONPATH: .
+        run: python -m pytest -q

@@ -436,6 +436,14 @@ This project adheres to responsible AI principles:
 ```
 global_env_trend/
 ├── app.py                          # Streamlit dashboard application
+├── utils/
+│   ├── __init__.py                 # Package marker
+│   └── modeling_helpers.py         # Reusable modeling functions (build_features, model_metrics, etc.)
+├── tests/
+│   └── test_modeling_helpers.py    # Unit tests for modeling helpers
+├── .github/
+│   └── workflows/
+│       └── ci.yml                  # GitHub Actions CI (syntax check + pytest)
 ├── data/
 │   ├── raw/
 │   │   └── v1/
@@ -451,6 +459,7 @@ global_env_trend/
 │   ├── 03_hypothesis_testing.ipynb               # Statistical hypothesis tests
 │   └── 04_predictive_modeling.ipynb              # ML model training and forecasting
 ├── raw_dataset/                    # Raw dataset directory
+├── .markdownlint.json              # Markdown lint configuration
 ├── Procfile                        # Heroku deployment configuration
 ├── requirements.txt                # Python dependencies
 ├── setup.sh                        # Streamlit configuration for Heroku
@@ -569,6 +578,15 @@ All pages respect the sidebar filters:
 - **Countries:** Select one or more countries (default: All)
 - **Year range:** Adjust the time period to analyze
 - **Show technical notes:** Toggle detailed statistical information
+
+### Automated Validation
+
+This project includes automated checks via GitHub Actions in `.github/workflows/ci.yml`:
+
+- Python 3.12 environment setup
+- Dependency installation from `requirements.txt`
+- Syntax validation for `app.py` and `utils/modeling_helpers.py`
+- Unit tests for modeling helper logic in `tests/test_modeling_helpers.py`
 
 ## Deployment
 

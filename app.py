@@ -2099,6 +2099,7 @@ elif st.session_state.current_page == "Scenario Builder":
                 baseline_temp = scenario_model.predict(baseline_X)[0]
 
                 temp_diff = pred_temp - baseline_temp
+                actual_temp = float(baseline_row["Avg_Temperature_degC"])
 
                 # ── Display results ───────────────────────────────────────
                 st.markdown("---")
@@ -2119,15 +2120,19 @@ elif st.session_state.current_page == "Scenario Builder":
 
                 st.info(
                     f"**{scenario_name} — {scenario_country} ({int(scenario_year)})**\n\n"
-                    f"📍 Baseline estimate ({baseline_year}): {baseline_temp:.2f} °C\n"
+                    f"🌡️ Observed temperature ({baseline_year}): **{actual_temp:.2f} °C**\n"
+                    f"📍 Model baseline estimate ({baseline_year}): {baseline_temp:.2f} °C\n"
                     f"🎯 Scenario estimate ({int(scenario_year)}): {pred_temp:.2f} °C\n"
-                    f"📈 Difference: {temp_diff:+.2f} °C\n\n"
+                    f"📈 Projected change: {temp_diff:+.2f} °C\n\n"
                     f"**Interpretation:** The model predicts a {abs(temp_diff):.2f} °C "
                     f"{'increase' if temp_diff > 0 else 'decrease'} relative to the "
-                    f"{baseline_year} baseline for {scenario_country}. Most of this "
-                    f"shift comes from the Year trend; environmental-factor adjustments "
-                    f"contribute smaller incremental changes. This reflects correlations "
-                    f"in the training data, not causal predictions."
+                    f"{baseline_year} baseline for {scenario_country}. The small gap "
+                    f"between the observed temperature ({actual_temp:.2f} °C) and the "
+                    f"model estimate ({baseline_temp:.2f} °C) is normal regression error. "
+                    f"Most of the projected change comes from the Year trend; "
+                    f"environmental-factor adjustments contribute smaller incremental "
+                    f"changes. This reflects correlations in the training data, not "
+                    f"causal predictions."
                 )
 
                 # ── Comparison bar chart ──────────────────────────────────

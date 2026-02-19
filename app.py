@@ -140,20 +140,6 @@ def filter_data(df: pd.DataFrame, countries: list[str], year_range: tuple[int, i
     return filtered[(filtered["Year"] >= year_range[0]) & (filtered["Year"] <= year_range[1])]
 
 
-# Helper functions for enhancements
-def get_country_emoji(country: str) -> str:
-    """Map country to flag emoji"""
-    flags = {
-        "United States": "🇺🇸", "China": "🇨🇳", "Germany": "🇩🇪", "Brazil": "🇧🇷",
-        "Australia": "🇦🇺", "India": "🇮🇳", "Nigeria": "🇳🇬", "Russia": "🇷🇺",
-        "Japan": "🇯🇵", "Canada": "🇨🇦", "Mexico": "🇲🇽", "United Kingdom": "🇬🇧",
-        "France": "🇫🇷", "Italy": "🇮🇹", "Spain": "🇪🇸", "South Korea": "🇰🇷",
-        "Indonesia": "🇮🇩", "Thailand": "🇹🇭", "Vietnam": "🇻🇳", "Philippines": "🇵🇭",
-        "Egypt": "🇪🇬", "South Africa": "🇿🇦", "Saudi Arabia": "🇸🇦", "Kenya": "🇰🇪"
-    }
-    return flags.get(country, "🌍")
-
-
 # Humanized labels for Plotly axes and legends
 LABEL_MAP = {
     "Avg_Temperature_degC": "Average Temperature (°C)",
@@ -1115,7 +1101,6 @@ elif st.session_state.current_page == "Data Overview":
     st.markdown("**First 10 records from the dataset:**")
     display_df = clean_df.head(10).copy()
     display_df["Year"] = display_df["Year"].astype(int)
-    display_df["Country"] = display_df["Country"].apply(lambda x: f"{get_country_emoji(x)} {x}")
     st.dataframe(display_df, use_container_width=True, hide_index=True)
     
     st.markdown("---")
@@ -1634,7 +1619,7 @@ elif st.session_state.current_page == "Modeling & Prediction":
                             mode="lines+markers", name="Forecast",
                             line=dict(color="#2E7D32", width=2),
                         ))
-                        title_text = f"{get_country_emoji(ci_country)} {ci_country} — Forecast with 95% CI"
+                        title_text = f"{ci_country} — Forecast with 95% CI"
                         subtitle = ""
                         if ci_width < 0.01:
                             subtitle = (
@@ -1851,7 +1836,6 @@ elif st.session_state.current_page == "Analytics Hub":
     if len(anomalies) > 0:
         st.warning(f"🚨 Found {len(anomalies)} anomalies")
         anomalies_display = anomalies.head(10).copy()
-        anomalies_display["Country"] = anomalies_display["Country"].apply(lambda x: f"{get_country_emoji(x)} {x}")
         st.dataframe(anomalies_display, use_container_width=True, hide_index=True)
     else:
         st.success(f"✅ No anomalies detected in {anomaly_col}")
@@ -2122,7 +2106,7 @@ elif st.session_state.current_page == "Scenario Builder":
 
                 r1, r2_col, r3 = st.columns(3)
                 with r1:
-                    st.metric("Country", f"{get_country_emoji(scenario_country)} {scenario_country}")
+                    st.metric("Country", scenario_country)
                 with r2_col:
                     st.metric("Target Year", int(scenario_year))
                 with r3:

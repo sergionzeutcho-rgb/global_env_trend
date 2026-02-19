@@ -3,6 +3,3 @@ raw_dataset/*
 data/raw/*
 __pycache__/
 README.md
-tests/
-.github/
-.markdownlint.json

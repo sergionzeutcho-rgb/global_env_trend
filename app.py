@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import plotly.io as pio
 import streamlit as st
 from scipy import stats
 from sklearn.linear_model import LinearRegression
@@ -208,8 +209,101 @@ def get_data_quality_score(df: pd.DataFrame) -> float:
     return min(100, completeness + uniqueness)
 
 
-st.markdown("""<h1 style='margin-bottom:0'>🌍 Global Environmental Trends (2000–2024)</h1>""", unsafe_allow_html=True)
-st.caption("Climate-related signals from 2000–2024 • Interpretable baseline model • Built for discussion & planning")
+# ---------------------------------------------------------------------------
+# Environmental colour palette (used across all charts)
+# ---------------------------------------------------------------------------
+ENV_COLORS = [
+    "#2E7D32",  # forest green
+    "#1565C0",  # ocean blue
+    "#6D4C41",  # earth brown
+    "#00838F",  # teal
+    "#558B2F",  # olive
+    "#EF6C00",  # amber
+    "#AD1457",  # berry
+    "#5E35B1",  # violet
+    "#00695C",  # dark teal
+    "#F9A825",  # gold
+    "#37474F",  # charcoal
+    "#C62828",  # deep red
+    "#0277BD",  # sky blue
+    "#4E342E",  # dark brown
+    "#1B5E20",  # dark green
+    "#FF8F00",  # dark amber
+    "#283593",  # indigo
+    "#2E7D32",  # green (repeat for 19th)
+    "#00BFA5",  # mint
+]
+
+# Register custom Plotly theme so every chart uses the palette automatically
+_env_template = pio.templates["plotly"]
+_env_template.layout.colorway = ENV_COLORS
+pio.templates.default = "plotly"
+
+# ---------------------------------------------------------------------------
+# Global CSS — hero banner, navigation, dividers, sidebar
+# ---------------------------------------------------------------------------
+st.markdown("""
+<style>
+/* ── Hero banner ───────────────────────────────────────────────────── */
+.hero-banner {
+    background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 40%, #43A047 100%);
+    padding: 1.8rem 2rem 1.2rem 2rem;
+    border-radius: 12px;
+    margin-bottom: 0.8rem;
+    text-align: center;
+}
+.hero-banner h1 {
+    color: #ffffff;
+    font-size: 2.2rem;
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+.hero-banner p {
+    color: #C8E6C9;
+    font-size: 0.95rem;
+    margin: 0.3rem 0 0 0;
+}
+
+/* ── Navigation bar — active page highlight ────────────────────────── */
+div[data-testid="stHorizontalBlock"] button[kind="primary"] {
+    background-color: #2E7D32 !important;
+    border-color: #2E7D32 !important;
+    color: #ffffff !important;
+    font-weight: 600;
+}
+div[data-testid="stHorizontalBlock"] button[kind="secondary"] {
+    background-color: #E8F5E9 !important;
+    border: 1px solid #A5D6A7 !important;
+    color: #1B5E20 !important;
+}
+div[data-testid="stHorizontalBlock"] button[kind="secondary"]:hover {
+    background-color: #C8E6C9 !important;
+    border-color: #66BB6A !important;
+}
+
+/* ── Styled section dividers ───────────────────────────────────────── */
+hr {
+    border: none;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #66BB6A, transparent);
+    margin: 1.2rem 0;
+}
+
+/* ── Sidebar branding ──────────────────────────────────────────────── */
+section[data-testid="stSidebar"] > div:first-child {
+    background-color: #E8F5E9;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ── Hero banner ──────────────────────────────────────────────────────
+st.markdown("""
+<div class="hero-banner">
+    <h1>🌍 Global Environmental Trends (2000–2024)</h1>
+    <p>Climate-related signals • Interpretable baseline model • Built for discussion &amp; planning</p>
+</div>
+""", unsafe_allow_html=True)
 
 # Initialize data variables to avoid unbound variable errors
 clean_df = pd.DataFrame()
@@ -247,6 +341,16 @@ LABEL_TO_KEY = dict(PAGE_OPTIONS)
 
 if "current_page" not in st.session_state:
     st.session_state.current_page = "Executive Summary"
+
+# ── Sidebar branding ─────────────────────────────────────────────────
+st.sidebar.markdown(
+    "<div style='text-align:center;padding:0.6rem 0 0.2rem 0'>"
+    "<span style='font-size:2.2rem'>🌿</span><br>"
+    "<span style='font-weight:700;color:#1B5E20;font-size:1rem'>Environmental Trends</span><br>"
+    "<span style='color:#558B2F;font-size:0.78rem'>2000 – 2024 Dashboard</span>"
+    "</div>",
+    unsafe_allow_html=True,
+)
 
 st.sidebar.title("📋 Navigation")
 page = st.sidebar.radio(
@@ -851,16 +955,16 @@ elif st.session_state.current_page == "Data Overview":
         col_data = clean_df[col_name].dropna()
         col_mean = col_data.mean()
         hist_fig.add_trace(
-            go.Histogram(x=col_data, nbinsx=20, marker_color="steelblue",
-                         marker_line_color="black", marker_line_width=1,
+            go.Histogram(x=col_data, nbinsx=20, marker_color="#2E7D32",
+                         marker_line_color="#1B5E20", marker_line_width=1,
                          opacity=0.7, showlegend=False),
             row=r, col=c,
         )
-        # Red dashed mean line (matching notebook style)
+        # Dashed mean line
         hist_fig.add_vline(
-            x=col_mean, line_dash="dash", line_color="red", line_width=1.5,
+            x=col_mean, line_dash="dash", line_color="#6D4C41", line_width=1.5,
             annotation_text=f"Mean: {col_mean:.1f}",
-            annotation_font_size=10, annotation_font_color="red",
+            annotation_font_size=10, annotation_font_color="#6D4C41",
             row=r, col=c,
         )
     hist_fig.update_layout(
@@ -903,7 +1007,7 @@ elif st.session_state.current_page == "Data Overview":
             vals = clean_df.loc[clean_df["Country"] == country, bm].dropna()
             box_fig.add_trace(
                 go.Box(y=vals, name=country, showlegend=False,
-                       marker_color="steelblue", line_color="steelblue"),
+                       marker_color="#2E7D32", line_color="#1B5E20"),
                 row=r, col=c,
             )
         box_fig.update_xaxes(tickangle=-90, tickfont_size=8, row=r, col=c)
@@ -1523,12 +1627,12 @@ elif st.session_state.current_page == "Modeling & Prediction":
                         ci_fig.add_trace(go.Scatter(
                             x=c_ci["Year"], y=c_ci["Lower_95CI"],
                             mode="lines", line=dict(width=0), fill="tonexty",
-                            fillcolor="rgba(100,100,255,0.2)", name="95% CI",
+                            fillcolor="rgba(46,125,50,0.15)", name="95% CI",
                         ))
                         ci_fig.add_trace(go.Scatter(
                             x=c_ci["Year"], y=c_ci["Predicted_Temperature"],
                             mode="lines+markers", name="Forecast",
-                            line=dict(color="blue", width=2),
+                            line=dict(color="#2E7D32", width=2),
                         ))
                         title_text = f"{get_country_emoji(ci_country)} {ci_country} — Forecast with 95% CI"
                         subtitle = ""

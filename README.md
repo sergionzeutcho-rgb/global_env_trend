@@ -451,6 +451,8 @@ global_env_trend/
 │   ├── 03_hypothesis_testing.ipynb               # Statistical hypothesis tests
 │   └── 04_predictive_modeling.ipynb              # ML model training and forecasting
 ├── raw_dataset/                    # Raw dataset directory
+├── .streamlit/
+│   └── config.toml                 # Streamlit theme (earth-toned colour scheme)
 ├── Procfile                        # Heroku deployment configuration
 ├── requirements.txt                # Python dependencies
 ├── setup.sh                        # Streamlit configuration for Heroku

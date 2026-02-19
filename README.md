@@ -47,7 +47,7 @@ This capstone project demonstrates comprehensive data analytics skills applied t
 ## Dataset Content
 
 * The dataset is sourced from [Kaggle](https://www.kaggle.com/datasets/adilshamim8/temperature). We created a user story in which data analytics can be applied in a real project in the workplace.
-* The dataset has 156 rows and represents environmental records from 19 countries across the globe. It indicates environmental indicators (temperature, emissions, rainfall, renewable energy, extreme weather events, forest coverage) and their respective values collected at 5-year intervals from 2000 to 2024.
+* The dataset has 156 rows (114 after duplicate removal) and represents environmental records from 19 countries across the globe. It covers 8 environmental indicators (temperature, CO₂ emissions, sea level rise, rainfall, population, renewable energy, extreme weather events, forest coverage) and their respective values collected at 5-year intervals from 2000 to 2024.
 * **Note:** The dataset contains some duplicate country-year combinations (42 duplicate entries for 7 countries: Australia, Brazil, China, Germany, India, Nigeria, Russia). These duplicates were present in the original source data and represent different measurement records for the same country and year.
 
 |Variable|Meaning|Units|
@@ -129,7 +129,7 @@ The dashboard is built with **Streamlit**, chosen over Tableau and Power BI beca
 	* Data quality assessment showing missing values, duplicate rows, and data integrity status
 	* Cleaning steps applied (duplicates removed, missing values handled, type/range validation)
 	* Key fields glossary with definitions and context for each metric
-	* Sample data table showing the first 10 records from the dataset with country flag emojis
+	* Sample data table showing the first 10 records from the dataset
 	* Download options for full dataset, data glossary, and quality report in CSV format
 
 ![Data Overview](docs/images/data_overview.png)
@@ -176,12 +176,12 @@ The dashboard is built with **Streamlit**, chosen over Tableau and Power BI beca
 ### Page 5: 🤖 Modeling & Prediction
 * Predictive modeling and forecasting
 	* Model overview explaining the approach (per-country Year→Temperature linear regression)
-	* Global model performance metrics section showing:
+	* Global model performance metrics section (from a multivariate model using Year + environmental features + country dummies, with an 80/20 time-aware split) showing:
 		* Mean Absolute Error (MAE)
 		* Root Mean Squared Error (RMSE)
 		* R² score
 	* Plain-language explanation of what these metrics mean
-	* Training and test split information (split_year = 2018)
+	* Training and test split information (split_year = 2018 for per-country models)
 	* **Per-country model performance table** showing MAE, RMSE, and R² for each country individually
 	* Temperature forecast visualization showing:
 		* Historical data (2000-2024)
@@ -189,7 +189,7 @@ The dashboard is built with **Streamlit**, chosen over Tableau and Power BI beca
 		* Comparison between actual and predicted values
 	* **Forecast confidence interval visualization** showing 95% bootstrap CI bands per country
 	* Country selector to view predictions for specific countries
-	* Custom prediction tool for interactive single-country forecasting
+	* Custom prediction tool for interactive single-country forecasting (uses a multivariate model with environmental features and country encoding)
 	* Download button to export predictions as CSV
 	* Model limitations and caveats clearly stated
 	* All charts include 💡 interpretation captions
@@ -477,6 +477,7 @@ global_env_trend/
 ├── .gitignore                      # Git ignore file
 ├── .python-version                 # Python version specification
 ├── .slugignore                     # Heroku slug ignore file
+├── runtime.txt                     # Python runtime for Heroku
 └── README.md                       # This file
 ```
 
@@ -606,16 +607,19 @@ All pages respect the sidebar filters:
 
 ## Main Data Analysis and Libraries
 
-### Core Production Libraries
+### Core Production Libraries (used in `app.py`)
 
 * **NumPy** (version 1.26.1) - Used for numerical computations and array operations in data processing and model calculations
 * **Pandas** (version 2.1.1) - Used for data manipulation, cleaning, aggregation, and transformation throughout all jupyter notebooks and the dashboard
-* **Matplotlib** (version 3.8.0) - Used to create static visualizations including line plots, scatter plots, and bar charts in the analysis notebooks
-* **Seaborn** (version 0.13.2) - Used to display correlation heatmaps and enhanced statistical plots with improved aesthetics
 * **Plotly** (version 5.17.0) - Used to display interactive visualizations in the Streamlit dashboard including line charts, scatter plots, and bar charts with hover tooltips
 * **Streamlit** (version 1.40.2) - Used as the dashboard framework to create an interactive web application for stakeholder exploration
 * **scikit-learn** (version 1.3.1) - Used for machine learning model development including LinearRegression, train-test splitting, and performance metrics (MAE, RMSE, R²)
 * **SciPy** (version 1.11.3) - Used for statistical hypothesis testing including Pearson/Spearman correlations and linear regression slope tests
+
+### Notebook Visualisation Libraries (used in notebooks, also in `requirements.txt` for Heroku compatibility)
+
+* **Matplotlib** (version 3.8.0) - Used to create static visualizations including line plots, scatter plots, and bar charts in the analysis notebooks
+* **Seaborn** (version 0.13.2) - Used to display correlation heatmaps and enhanced statistical plots with improved aesthetics
 
 ### Development Libraries (used in notebooks only)
 

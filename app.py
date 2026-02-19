@@ -707,7 +707,7 @@ if st.session_state.current_page == "Executive Summary":
         "France": "FRA", "Germany": "DEU", "India": "IND", "Indonesia": "IDN",
         "Italy": "ITA", "Japan": "JPN", "Mexico": "MEX", "Nigeria": "NGA",
         "Russia": "RUS", "South Africa": "ZAF", "South Korea": "KOR",
-        "Spain": "ESP", "Thailand": "THA", "United Kingdom": "GBR",
+        "Spain": "ESP", "Saudi Arabia": "SAU", "United Kingdom": "GBR",
         "United States": "USA",
     }
 

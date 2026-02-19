@@ -4,6 +4,7 @@ core.python*
 env.py
 __pycache__/
 *.py[cod]
+.pytest_cache/
 node_modules/
 cloudinary_python.txt
 kaggle.json

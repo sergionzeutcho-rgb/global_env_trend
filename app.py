@@ -260,9 +260,13 @@ st.sidebar.markdown("---")
 
 st.sidebar.header("Filters")
 
-# Reset filters button
-if st.sidebar.button("🔄 Reset All Filters", help="Reset all filters to default settings"):
-    st.session_state.selected_countries = sorted(clean_df["Country"].unique().tolist())
+# Reset everything button
+if st.sidebar.button("🔄 Reset App", help="Reset page, filters, and all widget state to defaults"):
+    # Preserve only the keys Streamlit needs internally
+    for k in list(st.session_state.keys()):
+        del st.session_state[k]
+    # Restore clean defaults
+    st.session_state.current_page = "Executive Summary"
     st.session_state.year_slider = (int(clean_df["Year"].min()), int(clean_df["Year"].max()))
     st.rerun()
 
@@ -353,7 +357,7 @@ if filtered_df.empty:
     st.markdown("""
     - Try expanding the year range
     - Select more countries
-    - Click **Reset All Filters** above to start over
+    - Click **Reset App** above to start over
     """)
     st.stop()
 

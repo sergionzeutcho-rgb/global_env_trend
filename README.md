@@ -118,6 +118,8 @@ The dashboard is built with **Streamlit**, chosen over Tableau and Power BI beca
 	* Country-specific findings table showing which countries face the greatest challenges or have made the strongest progress
 	* Status indicators (red/yellow/green) to highlight urgent attention areas
 
+![Executive Summary](docs/images/executive_summary.png)
+
 ### Page 2: 📊 Data Overview
 * Data overview, quality assessment, and exploratory statistics
 	* Summary metrics: number of countries, years covered, total records, and indicators tracked
@@ -129,6 +131,8 @@ The dashboard is built with **Streamlit**, chosen over Tableau and Power BI beca
 	* Key fields glossary with definitions and context for each metric
 	* Sample data table showing the first 10 records from the dataset with country flag emojis
 	* Download options for full dataset, data glossary, and quality report in CSV format
+
+![Data Overview](docs/images/data_overview.png)
 
 ### Page 3: 📈 Overview
 * Key signals and trends
@@ -145,6 +149,8 @@ The dashboard is built with **Streamlit**, chosen over Tableau and Power BI beca
 		* Countries with highest renewable energy growth
 		* Overall trends summary
 	* All charts include 💡 interpretation captions to help non-technical users
+
+![Overview](docs/images/overview.png)
 
 ### Page 4: 🔍 Explore Patterns
 * Correlation and relationship analysis
@@ -164,6 +170,8 @@ The dashboard is built with **Streamlit**, chosen over Tableau and Power BI beca
 		* Plain-language conclusion for each hypothesis
 	* Technical notes toggle to show/hide detailed statistical information
 	* Time series visualizations showing trends over the full period
+
+![Explore Patterns](docs/images/explore_patterns.png)
 
 ### Page 5: 🤖 Modeling & Prediction
 * Predictive modeling and forecasting
@@ -186,6 +194,8 @@ The dashboard is built with **Streamlit**, chosen over Tableau and Power BI beca
 	* Model limitations and caveats clearly stated
 	* All charts include 💡 interpretation captions
 
+![Modeling & Prediction](docs/images/modeling_prediction.png)
+
 ### Page 6: 📊 Analytics Hub
 * Advanced analytics and insights
 	* Data quality dashboard showing how complete and unique the data is
@@ -194,6 +204,8 @@ The dashboard is built with **Streamlit**, chosen over Tableau and Power BI beca
 	* Anomaly detection to find unusual data points that stand out from normal patterns for each country
 	* Downloadable quality reports and anomaly data in CSV format
 
+![Analytics Hub](docs/images/analytics_hub.png)
+
 ### Page 7: 🔄 Comparison Tool
 * Country-to-country comparison
 	* Multi-select up to 5 countries for side-by-side comparison
@@ -201,6 +213,8 @@ The dashboard is built with **Streamlit**, chosen over Tableau and Power BI beca
 	* Trends over time with selectable metrics and explanatory captions
 	* Interactive line charts showing historical patterns for selected countries
 	* Downloadable comparison data in CSV format
+
+![Comparison Tool](docs/images/comparison_tool.png)
 
 ### Page 8: ⚙️ Scenario Builder
 * Interactive "what-if" exploration tool
@@ -212,6 +226,8 @@ The dashboard is built with **Streamlit**, chosen over Tableau and Power BI beca
 	* Visual comparison between current baseline and your scenario with explanatory caption
 	* Feature-contribution breakdown table showing each factor's coefficient, change, and temperature impact
 	* Shows temperature difference and interpretation of results
+
+![Scenario Builder](docs/images/scenario_builder.png)
 
 ## Project Hypothesis and Validation
 
@@ -450,6 +466,8 @@ global_env_trend/
 │   ├── 02_eda_descriptive_stats.ipynb            # Exploratory data analysis
 │   ├── 03_hypothesis_testing.ipynb               # Statistical hypothesis tests
 │   └── 04_predictive_modeling.ipynb              # ML model training and forecasting
+├── docs/
+│   └── images/                     # Dashboard screenshots for README
 ├── raw_dataset/                    # Raw dataset directory
 ├── .streamlit/
 │   └── config.toml                 # Streamlit theme (earth-toned colour scheme)

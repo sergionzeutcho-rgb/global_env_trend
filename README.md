@@ -595,7 +595,7 @@ All pages respect the sidebar filters:
 
 ### Heroku
 
-* **Live App Link:** _To be added after deployment to Heroku_
+* **Live App Link:** [https://global-env-trend-0a383d52f17a.herokuapp.com/](https://global-env-trend-0a383d52f17a.herokuapp.com/)
 * **Deployment Steps:**
 
 1. Log in to Heroku and create an App

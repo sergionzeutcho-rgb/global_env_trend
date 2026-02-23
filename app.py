@@ -1327,6 +1327,14 @@ elif st.session_state.current_page == "Explore Patterns":
         title="CO2 emissions per capita vs average temperature",
         labels=LABEL_MAP,
     )
+    # Add OLS trend line (matching Notebook 03)
+    h1_valid = filtered_df.dropna(subset=["CO2_Emissions_tons_per_capita", "Avg_Temperature_degC"])
+    if len(h1_valid) > 1:
+        h1_r, _ = stats.pearsonr(h1_valid["CO2_Emissions_tons_per_capita"], h1_valid["Avg_Temperature_degC"])
+        z1 = np.polyfit(h1_valid["CO2_Emissions_tons_per_capita"], h1_valid["Avg_Temperature_degC"], 1)
+        p1 = np.poly1d(z1)
+        x_range = np.linspace(h1_valid["CO2_Emissions_tons_per_capita"].min(), h1_valid["CO2_Emissions_tons_per_capita"].max(), 100)
+        scatter_fig.add_trace(go.Scatter(x=x_range, y=p1(x_range), mode="lines", name=f"Trend line (r={h1_r:.3f})", line=dict(color="red", dash="dash", width=2)))
     st.plotly_chart(scatter_fig, use_container_width=True)
     st.caption(
         "⚠️ Note: Countries with different sizes and industries will have different patterns. "
@@ -1352,6 +1360,14 @@ elif st.session_state.current_page == "Explore Patterns":
         title="Renewable energy share vs CO2 emissions per capita",
         labels=LABEL_MAP,
     )
+    # Add OLS trend line (matching Notebook 03)
+    h2_valid = filtered_df.dropna(subset=["Renewable_Energy_pct", "CO2_Emissions_tons_per_capita"])
+    if len(h2_valid) > 1:
+        h2_r, _ = stats.pearsonr(h2_valid["Renewable_Energy_pct"], h2_valid["CO2_Emissions_tons_per_capita"])
+        z2 = np.polyfit(h2_valid["Renewable_Energy_pct"], h2_valid["CO2_Emissions_tons_per_capita"], 1)
+        p2 = np.poly1d(z2)
+        x_range2 = np.linspace(h2_valid["Renewable_Energy_pct"].min(), h2_valid["Renewable_Energy_pct"].max(), 100)
+        scatter_fig2.add_trace(go.Scatter(x=x_range2, y=p2(x_range2), mode="lines", name=f"Trend line (r={h2_r:.3f})", line=dict(color="red", dash="dash", width=2)))
     st.plotly_chart(scatter_fig2, use_container_width=True)
     st.caption(
         "💡 Tip: Countries that invested in renewables earlier tend to have lower current emissions.\n\n"
@@ -1375,7 +1391,7 @@ elif st.session_state.current_page == "Explore Patterns":
         labels=LABEL_MAP,
     )
     st.plotly_chart(hist_fig, use_container_width=True)
-    st.caption("� The bars show how many observations (country-year combinations) fall into each rainfall range.")
+    st.caption("📊 The bars show how many observations (country-year combinations) fall into each rainfall range.")
 
     st.subheader("⛈️ Extreme Weather Events Over Time")
     st.markdown(
@@ -1395,6 +1411,16 @@ elif st.session_state.current_page == "Explore Patterns":
         markers=True,
         labels=LABEL_MAP,
     )
+    # Add OLS regression line (matching Notebook 03)
+    if len(events_trend) > 1:
+        h3_slope, h3_int, h3_r_val, h3_p_val, _ = stats.linregress(events_trend["Year"], events_trend["Extreme_Weather_Events"])
+        trend_fig.add_trace(go.Scatter(
+            x=events_trend["Year"],
+            y=h3_int + h3_slope * events_trend["Year"],
+            mode="lines",
+            name=f"Trend (slope={h3_slope:.3f}/yr, p={h3_p_val:.3f})",
+            line=dict(color="red", dash="dash", width=2),
+        ))
     st.plotly_chart(trend_fig, use_container_width=True)
     st.caption(
         "⚠️ Note: Increasing trends may reflect both actual climate changes and improved monitoring/reporting systems over time.\n\n"
@@ -1418,6 +1444,14 @@ elif st.session_state.current_page == "Explore Patterns":
         title="Forest area vs extreme weather events",
         labels=LABEL_MAP,
     )
+    # Add OLS trend line (matching Notebook 03)
+    h4_valid = filtered_df.dropna(subset=["Forest_Area_pct", "Extreme_Weather_Events"])
+    if len(h4_valid) > 1:
+        h4_r, _ = stats.pearsonr(h4_valid["Forest_Area_pct"], h4_valid["Extreme_Weather_Events"])
+        z4 = np.polyfit(h4_valid["Forest_Area_pct"], h4_valid["Extreme_Weather_Events"], 1)
+        p4 = np.poly1d(z4)
+        x_range4 = np.linspace(h4_valid["Forest_Area_pct"].min(), h4_valid["Forest_Area_pct"].max(), 100)
+        scatter_fig3.add_trace(go.Scatter(x=x_range4, y=p4(x_range4), mode="lines", name=f"Trend line (r={h4_r:.3f})", line=dict(color="red", dash="dash", width=2)))
     st.plotly_chart(scatter_fig3, use_container_width=True)
     st.caption(
         "💡 Insight: Forests provide local benefits (soil stability, flood control) but don't significantly reduce "

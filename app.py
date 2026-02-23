@@ -500,7 +500,7 @@ if st.session_state.current_page == "Executive Summary":
         "Average Temperature",
         f"{summary_last['Avg_Temperature_degC']:.2f}°C",
         f"{temp_change:+.2f}°C since {int(summary_first['Year'])}",
-        delta_color="inverse" if temp_change > 0 else "normal"
+        delta_color="inverse"
     )
     
     co2_change = summary_last['CO2_Emissions_tons_per_capita'] - summary_first['CO2_Emissions_tons_per_capita']
@@ -508,7 +508,7 @@ if st.session_state.current_page == "Executive Summary":
         "CO2 Emissions (per person)",
         f"{summary_last['CO2_Emissions_tons_per_capita']:.2f} tons",
         f"{co2_change:+.2f} tons since {int(summary_first['Year'])}",
-        delta_color="inverse" if co2_change > 0 else "normal"
+        delta_color="inverse"
     )
     
     renew_change = summary_last['Renewable_Energy_pct'] - summary_first['Renewable_Energy_pct']
@@ -516,7 +516,7 @@ if st.session_state.current_page == "Executive Summary":
         "Renewable Energy",
         f"{summary_last['Renewable_Energy_pct']:.2f}%",
         f"{renew_change:+.2f}% since {int(summary_first['Year'])}",
-        delta_color="normal" if renew_change > 0 else "inverse"
+        delta_color="normal"
     )
 
     # Plain-language interpretation

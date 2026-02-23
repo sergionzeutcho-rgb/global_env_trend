@@ -317,7 +317,7 @@ PAGE_OPTIONS = [
     ("📊 Data Overview", "Data Overview"),
     ("📈 Overview", "Overview"),
     ("🔍 Explore Patterns", "Explore Patterns"),
-    ("🤖 Modeling & Prediction", "Modeling & Prediction"),
+    ("📉 Modeling & Prediction", "Modeling & Prediction"),
     ("📊 Analytics Hub", "Analytics Hub"),
     ("🔄 Comparison Tool", "Comparison Tool"),
     ("⚙️ Scenario Builder", "Scenario Builder"),
@@ -460,7 +460,7 @@ if filtered_df.empty:
 # ── Global quick-access navigation (visible on every page) ──
 nav_icons = {
     "Executive Summary": "📝", "Data Overview": "📊", "Overview": "📈",
-    "Explore Patterns": "🔍", "Modeling & Prediction": "🤖",
+    "Explore Patterns": "🔍", "Modeling & Prediction": "📉",
     "Analytics Hub": "📊", "Comparison Tool": "🔄", "Scenario Builder": "⚙️",
 }
 nav_cols = st.columns(len(PAGE_OPTIONS))
@@ -1487,7 +1487,7 @@ elif st.session_state.current_page == "Explore Patterns":
             )
 
 elif st.session_state.current_page == "Modeling & Prediction":
-    st.subheader("🤖 Baseline Temperature Model")
+    st.subheader("📉 Baseline Temperature Model")
     st.write(
         "📊 **What this does:** A simple, explainable model that learns the relationship between emissions, renewable energy, weather, and temperature. "
         "It splits data into a training period (to learn) and a test period (to verify). The goal is clarity over precision."

@@ -517,7 +517,7 @@ global_env_trend/
 
 Before running this project, ensure you have:
 
-* **Python 3.12 or higher** (project tested with Python 3.12)
+* **Python 3.12 or higher** (project tested with Python 3.14)
 * **pip** (Python package manager)
 * **Git** (for cloning the repository)
 * **8GB RAM minimum** (recommended for running notebooks with profiling)
@@ -527,7 +527,7 @@ Before running this project, ensure you have:
 
 1. **Clone the repository:**
    ```bash
-   git clone <your-repo-url>
+   git clone https://github.com/sergionzeutcho-rgb/global_env_trend.git
    cd global_env_trend
    ```
 
@@ -609,16 +609,16 @@ All pages respect the sidebar filters:
 
 ### Core Production Libraries (used in `app.py`)
 
-* **NumPy** (version 1.26.1) - Used for numerical computations and array operations in data processing and model calculations
-* **Pandas** (version 2.1.1) - Used for data manipulation, cleaning, aggregation, and transformation throughout all jupyter notebooks and the dashboard
-* **Plotly** (version 5.17.0) - Used to display interactive visualizations in the Streamlit dashboard including line charts, scatter plots, and bar charts with hover tooltips
-* **Streamlit** (version 1.40.2) - Used as the dashboard framework to create an interactive web application for stakeholder exploration
-* **scikit-learn** (version 1.3.1) - Used for machine learning model development including LinearRegression, train-test splitting, and performance metrics (MAE, RMSE, R²)
-* **SciPy** (version 1.11.3) - Used for statistical hypothesis testing including Pearson/Spearman correlations and linear regression slope tests
+* **NumPy** (version 2.4.2) - Used for numerical computations and array operations in data processing and model calculations
+* **Pandas** (version 2.3.3) - Used for data manipulation, cleaning, aggregation, and transformation throughout all jupyter notebooks and the dashboard
+* **Plotly** (version 6.5.2) - Used to display interactive visualizations in the Streamlit dashboard including line charts, scatter plots, and bar charts with hover tooltips
+* **Streamlit** (version 1.54.0) - Used as the dashboard framework to create an interactive web application for stakeholder exploration
+* **scikit-learn** (version 1.8.0) - Used for machine learning model development including LinearRegression, train-test splitting, and performance metrics (MAE, RMSE, R²)
+* **SciPy** (version 1.17.1) - Used for statistical hypothesis testing including Pearson/Spearman correlations and linear regression slope tests
 
 ### Notebook Visualisation Libraries (used in notebooks, also in `requirements.txt` for Heroku compatibility)
 
-* **Matplotlib** (version 3.8.0) - Used to create static visualizations including line plots, scatter plots, and bar charts in the analysis notebooks
+* **Matplotlib** (version 3.10.8) - Used to create static visualizations including line plots, scatter plots, and bar charts in the analysis notebooks
 * **Seaborn** (version 0.13.2) - Used to display correlation heatmaps and enhanced statistical plots with improved aesthetics
 
 ### Development Libraries (used in notebooks only)

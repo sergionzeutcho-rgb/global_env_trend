@@ -1,5 +1,7 @@
 # Global Environmental Trends (2000–2024)
 
+**[Live App](https://global-env-trend-0a383d52f17a.herokuapp.com/)**
+
 ## Table of Contents
 
 1. [Project Overview](#project-overview)

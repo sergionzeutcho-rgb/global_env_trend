@@ -565,7 +565,7 @@ After installation, run the Streamlit app:
 streamlit run app.py
 ```
 
-The dashboard will open in your browser at `http://localhost:8501`.
+The dashboard is deployed at [https://global-env-trend-0a383d52f17a.herokuapp.com/](https://global-env-trend-0a383d52f17a.herokuapp.com/). If running locally, it will open at `http://localhost:8501`.
 
 ### Dashboard Navigation
 

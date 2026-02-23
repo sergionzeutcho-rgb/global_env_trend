@@ -317,7 +317,7 @@ PAGE_OPTIONS = [
     ("📊 Data Overview", "Data Overview"),
     ("📈 Overview", "Overview"),
     ("🔍 Explore Patterns", "Explore Patterns"),
-    ("� Modeling & Prediction", "Modeling & Prediction"),
+    ("🎯 Modeling & Prediction", "Modeling & Prediction"),
     ("📊 Analytics Hub", "Analytics Hub"),
     ("🔄 Comparison Tool", "Comparison Tool"),
     ("⚙️ Scenario Builder", "Scenario Builder"),
@@ -460,7 +460,7 @@ if filtered_df.empty:
 # ── Global quick-access navigation (visible on every page) ──
 nav_icons = {
     "Executive Summary": "📝", "Data Overview": "📊", "Overview": "📈",
-    "Explore Patterns": "🔍", "Modeling & Prediction": "�",
+    "Explore Patterns": "🔍", "Modeling & Prediction": "🎯",
     "Analytics Hub": "📊", "Comparison Tool": "🔄", "Scenario Builder": "⚙️",
 }
 nav_cols = st.columns(len(PAGE_OPTIONS))

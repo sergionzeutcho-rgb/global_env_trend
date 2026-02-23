@@ -173,7 +173,7 @@ The dashboard is built with **Streamlit**, chosen over Tableau and Power BI beca
 
 ![Explore Patterns](docs/images/explore_patterns.png)
 
-### Page 5: 🔮 Modeling & Prediction
+### Page 5: 🎯 Modeling & Prediction
 * Predictive modeling and forecasting
 	* Model overview explaining the approach (per-country Year→Temperature linear regression)
 	* Global model performance metrics section (from a multivariate model using Year + environmental features + country dummies, with an 80/20 time-aware split) showing:
@@ -579,7 +579,7 @@ Pages:
 - 📊 **Data Overview** — Dataset information, descriptive statistics, histograms, box plots, and quality metrics
 - 📈 **Overview** — Key environmental trends with interpreted charts
 - 🔍 **Explore Patterns** — Correlation analysis, scatter plots, and hypothesis test summary
-- 🔮 **Modeling & Prediction** — Per-country performance table, forecasts with confidence intervals, and custom prediction tool
+- 🎯 **Modeling & Prediction** — Per-country performance table, forecasts with confidence intervals, and custom prediction tool
 - 📊 **Analytics Hub** — Data quality dashboard, correlations, and anomaly detection
 - 🔄 **Comparison Tool** — Country-to-country side-by-side comparisons
 - ⚙️ **Scenario Builder** — Interactive what-if scenario modeling with per-country baseline, model metrics, and feature-contribution breakdown
